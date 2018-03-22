@@ -220,7 +220,7 @@ def photons(flux, wavelength, partition): #flux in erg/cm^2/s/A,  wavelength in 
 	
 	
 
-def setupPrint(flux, wavelength, partition, photonspersecondRamses, zero=False):
+def setupPrint(flux, wavelength, partition, photonspersecondRamses):
 	
 	photonBins = photons(flux, wavelength, partition)
 	photonBinsRamses = photonBins*photonspersecondRamses/np.sum(photonBins)
