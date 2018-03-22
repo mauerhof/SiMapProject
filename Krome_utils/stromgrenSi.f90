@@ -92,7 +92,7 @@ program ramses
 		nH = xH*cells(icells,1)
 		nHe = 0.25*yHe*cells(icells,1)
 	
-		densities(i,:) = (/ nH*cells(icells,3) + nHe*(cells(icells,4)+2*cells(icells,5)), nH*(1-cells(icells,3)), nHe*(1-cells(icells,4)-cells(icells,5)), 2.512d-6, nH*cells(icells,3), nHe*cells(icells,4), 0d0, nHe*cells(icells,5), 0d0, 0d0, 0d0, 0d0, 0d0 /) !(E, HI, HeI, SiI, HII, HeII, SiII, HeIII, SiIII, SiIV, SiV, SiVI, SiVII)
+		densities(i,:) = (/ nH*cells(icells,3) + nHe*(cells(icells,4)+2*cells(icells,5)), nH*(1-cells(icells,3)), nHe*(1-cells(icells,4)-cells(icells,5)), 3.467d-6, nH*cells(icells,3), nHe*cells(icells,4), 0d0, nHe*cells(icells,5), 0d0, 0d0, 0d0, 0d0, 0d0 /) !(E, HI, HeI, SiI, HII, HeII, SiII, HeIII, SiIII, SiIV, SiV, SiVI, SiVII)
 		
 		Tgas = cells(icells,2)/cells(icells,1)*1.66d-24/1.38062d-16*(3.09d21/3.1556926d13)**2/(xH*(1+cells(icells,3)) + 0.25*yHe*(1+cells(icells,4)+2*cells(icells,5)))
 		
