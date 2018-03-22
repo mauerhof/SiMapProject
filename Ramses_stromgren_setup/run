@@ -1,0 +1,1 @@
+mpirun -np 4 ../../ramses/bin_3d/ramses3d setup.nml > run.log &
