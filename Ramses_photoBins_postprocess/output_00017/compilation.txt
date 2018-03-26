@@ -1,0 +1,5 @@
+ compile date = 03/09/18-10:25:30
+ patch dir    = 
+ remote repo  = 
+ local branch = 
+ last commit  = 
