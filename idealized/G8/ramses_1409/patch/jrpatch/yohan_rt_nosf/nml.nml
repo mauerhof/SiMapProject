@@ -1,0 +1,97 @@
+&RUN_PARAMS 
+hydro=.true.
+poisson=.true.
+pic=.true.
+ncontrol=1
+nsubcycle=1,1,1,1,1,2
+!nsubcycle=1,15*2
+nremap=10
+nrestart=0
+ordering='angular'
+rt=.true.
+/
+
+&AMR_PARAMS
+levelmin=6
+levelmax=14
+ngridmax=600000
+npartmax=600000
+boxlen=60.0
+/
+
+&BOUNDARY_PARAMS
+nboundary = 6
+bound_type= 2, 2, 2, 2, 2, 2
+ibound_min=-1,+1,-1,-1,-1,-1
+ibound_max=-1,+1,+1,+1,+1,+1
+jbound_min= 0, 0,-1,+1,-1,-1
+jbound_max= 0, 0,-1,+1,+1,+1
+kbound_min= 0, 0, 0, 0,-1,+1
+kbound_max= 0, 0, 0, 0,-1,+1
+/
+
+&INIT_PARAMS
+filetype='ascii'
+initfile(1)='./'
+/
+
+&OUTPUT_PARAMS
+foutput=70
+noutput=1
+tout=5.0,10.0,15.0,30.0
+/
+
+&POISSON_PARAMS
+gravity_type=0
+gravity_params=35.,10.,0.04,0.15
+/
+
+&HYDRO_PARAMS
+gamma=1.666666667
+courant_factor=0.8
+slope_type=1
+scheme='muscl'
+!riemann='acoustic'
+riemann='hllc'
+pressure_fix=.true.
+beta_fix=0.5
+/
+
+&PHYSICS_PARAMS
+cooling=.true.
+T2_star=100.
+n_star=10.
+eps_star=0.01
+g_star=2d0
+eta_sn=0.1
+!f_w=1d1
+metal=.true.
+yield=0.1
+z_ave=1d-3
+/
+
+&REFINE_PARAMS 
+mass_sph=2d-6
+m_refine=15*8.0
+!jeans_refine=15*4d0
+interpol_var=1
+interpol_type=0
+/
+
+&RT_PARAMS
+rt_smooth=.true.
+rt_output_coolstats=.true.
+rt_star=.true.
+rt_is_init_xion=.true.
+sedprops_update=1
+upload_equilibrium_x=.true.
+rt_flux_scheme='glf'
+rt_courant_factor=0.8		! courant number for RT timesteps
+rt_c_fraction=0.001		  ! fraction of actual lightspeed set to RT lightspeed
+rt_otsa=.true.
+/
+
+&RT_PACS
+pacL0 = 1d-1, 13.60, 24.59, 54.42
+pacL1 = 13.6d0, 24.59, 54.42, 0.0
+/

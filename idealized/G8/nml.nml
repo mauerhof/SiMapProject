@@ -1,0 +1,130 @@
+&RUN_PARAMS 
+cosmo=.false.
+pic=.true.
+poisson=.true.
+hydro=.true.
+nrestart=0
+nremap=20
+nsubcycle=1,1,2,2
+ncontrol=1
+rt=.true.
+/
+
+&OUTPUT_PARAMS
+foutput=200000
+noutput=17
+tout=0.067, 0.335, 0.671, 1.342, 2.01, 2.68, 3.3557, 6.7114, 10.0671, 13.4228, 16.7785, 20.12, 23.48, 26.83, 30.19, 33.54, 34.55  ! 1, 5, 10, 20, 30, 40, 50, 100, 150, 200, 250, 300, 350, 400, 450, 500, 515 Myr
+/
+
+&INIT_PARAMS
+filetype='ascii'
+initfile(1)='../IC_1d10_low/'
+/
+
+&AMR_PARAMS
+levelmin=6
+levelmax=13     ! Physical resolution is ~18 pc
+ngridmax=100000
+npartmax=200000
+boxlen=150d0
+/
+
+&POISSON_PARAMS 
+epsilon=1e-4
+/
+
+&BOUNDARY_PARAMS
+nboundary=6
+bound_type= 2, 2,  2,  2,  2,  2
+ibound_min=-1, 1, -1, -1, -1, -1
+ibound_max=-1, 1,  1,  1,  1,  1
+jbound_min= 0, 0, -1,  1, -1, -1
+jbound_max= 0, 0, -1,  1,  1,  1
+kbound_min= 0, 0,  0,  0, -1,  1
+kbound_max= 0, 0,  0,  0, -1,  1
+/
+
+&PHYSICS_PARAMS
+cooling=.true.
+neq_chem=.true.
+metal=.true.
+n_star=10.	
+T2_star=500d0	! So Jeans length at n_star is ~7*dx
+g_star=2d0      
+eps_star=0.02
+m_star=0.6d0
+z_ave=0.1
+eta_sn=0.2
+yield=0.0
+T2thres_SF=3d3
+t_delay=5d0
+/
+
+&HYDRO_PARAMS
+gamma=1.67 
+courant_factor=0.8
+slope_type=1
+pressure_fix=.true.
+beta_fix=0.5
+riemann='hllc'
+/
+
+&REFINE_PARAMS
+mass_sph=1d-6  ! 1000 solar masses = 1.666 stellar particle masses.
+m_refine=10*8. ! Use 8 particles for med, 3 for low
+interpol_type=0
+interpol_var=1
+jeans_refine=20*4.0
+/
+
+&MERGER_PARAMS
+rad_profile='exponential'
+z_profile='gaussian'
+gal_center1=0.0,0.0,0.0
+gal_center2=1d5,1d5,1d5 ! Well outside the box
+Mgas_disk1=0.171951
+Mgas_disk2=0d0
+typ_radius1=0.686436
+typ_radius2=0.686436
+cut_radius1=5.01098 
+cut_radius2=5.01098 
+typ_height1=0.0686436
+typ_height2=0.0686436
+cut_height1=0.288303 
+cut_height2=0.288303 
+IG_density_factor=1d0
+Vcirc_dat_file1='../IC_1d10_low/Vcirc.dat'
+Vcirc_dat_file2='../IC_1d10_low/Vcirc.dat'
+ic_part_file_gal1='ic_part'
+ic_part_file_gal2='ic_part'
+gal_axis1=0,0,1
+gal_axis2=0,0,1
+Vgal1=0.0,0.0,0.0
+Vgal2=0.0,0.0,0.0
+/
+
+&RT_PARAMS
+rt_isIR=.false.
+rt_isoPress=.true.
+rt_pressBoost=1d0
+rt_isIRtrap=.false.
+rt_metal_cooling=.true.
+SED_isEgy=.true.
+rt_smooth=.true.
+rt_output_coolstats=.true.
+rt_star=.true.
+rt_esc_frac=1d0
+sedprops_update=5
+rt_flux_scheme='glf'
+rt_courant_factor=0.8		! courant number for RT timesteps
+rt_c_fraction=0.005		                      ! fraction of actual lightspeed set to RT lightspeed
+rt_otsa=.true.
+SED_dir='/cosma/home/dp004/dc-rosd1/data/Library/SED/bc03_Chabrier/'
+/
+
+&RT_GROUPS
+kappaAbs   = 0d0,   0d0,    0d0
+kappaSc    = 0d0,   0d0,    0d0
+groupL0    = 13.60, 24.59,  54.42
+groupL1    = 24.59, 54.42,  0.0
+/
