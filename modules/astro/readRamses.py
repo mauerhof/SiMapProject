@@ -74,6 +74,21 @@ def read_xH(directory, timestep):
 	
 	
 	
+def read_lmax(directory, timestep):
+	
+	tsString = '_' + format(timestep, "05")
+	directory = directory+'output'+tsString+'/info'+tsString+'.txt'
+	
+	f = open(directory, 'r')
+	parameters = f.read().split()
+	
+	for i in range(len(parameters)):
+		if parameters[i] == 'levelmax':                 
+			lmax = eval(parameters[i+2])   
+			break
+
+	return lmax
+	
 	
 	
 	
