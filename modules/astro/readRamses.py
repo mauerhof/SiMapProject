@@ -46,8 +46,11 @@ def read_groups(directory, timestep):
 		if parameters[i] == 'groupL0':
 			break
 	i += 3
+	groups.append(eval(parameters[i]))
+	i += 1
 	while(parameters[i] != 'groupL1'):
-		groups.append(eval(parameters[i]))
+		if (eval(parameters[i]) > eval(parameters[i-1])):
+			groups.append(eval(parameters[i]))
 		i += 1
 	
 	return groups        
