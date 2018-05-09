@@ -35,12 +35,12 @@ binIndicies = range(10,10+4*nBins,4)
               
 
 ncells = cu.count_cells(ramDir,timestep,lmax,center,radius) 
-cells,cell_pos,cell_l = cu.read_cells_hydro(ramDir,timestep,lmax,ncells,[idens,ipre,ixhii,ixheii,ixheiii,10,14,18],center,radius,True)
+cells,cell_pos,cell_l = cu.read_cells_hydro(ramDir,timestep,lmax,ncells,indices+binIndicies,center,radius,True)
 
 Tgas = cells[:,1]/cells[:,0]*1.67e-24/1.38062e-16*(units[0]/units[2])**2
 
 
-nx, ny = cu.get_map_nxny(lmax, xylim[0], xylim[1], xylim[0], xylim[1])
+nx, ny = cu.get_map_nxny(lmax, xlim[0], xlim[1], ylim[0], ylim[1])
 
 TempMap, w = cu.make_map(lmax, False, xlim[0], xlim[1], ylim[0], ylim[1], zlim[0], zlim[1], np.log10(Tgas), cells[:,0], cell_pos[:,0], cell_pos[:,1], cell_pos[:,2], cell_l, nx, ny)
 plt.imshow(TempMap, origin='lower')
@@ -48,8 +48,14 @@ plt.colorbar()
 plt.savefig('T_Map_'+str(timestep)+'.png') 
 plt.close()
 
-TempMap, w = cu.make_map(lmax, False, xlim[0], xlim[1], ylim[0], ylim[1], zlim[0], zlim[1], cells[:,2], cells[:,0], cell_pos[:,0], cell_pos[:,1], cell_pos[:,2], cell_l, nx, ny)
+TempMap, w = cu.make_map(lmax, False, xlim[0], xlim[1], ylim[0], ylim[1], zlim[0], zlim[1], cells[:,3], cells[:,0], cell_pos[:,0], cell_pos[:,1], cell_pos[:,2], cell_l, nx, ny)
 plt.imshow(TempMap, origin='lower')
 plt.colorbar()
 plt.savefig('HII_Map_'+str(timestep)+'.png') 
+plt.close()
+
+TempMap, w = cu.make_map(lmax, False, xlim[0], xlim[1], ylim[0], ylim[1], zlim[0], zlim[1], cells[:,2], cells[:,0], cell_pos[:,0], cell_pos[:,1], cell_pos[:,2], cell_l, nx, ny)
+plt.imshow(TempMap, origin='lower')
+plt.colorbar()
+plt.savefig('Z_Map_'+str(timestep)+'.png') 
 plt.close()
