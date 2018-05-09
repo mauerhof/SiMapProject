@@ -57,3 +57,23 @@ def read_groups(directory, timestep):
 			  
 
 
+def read_xH(directory, timestep):
+	
+	tsString = '_' + format(timestep, "05")
+	directory = directory+'output'+tsString+'/info_rt'+tsString+'.txt'
+	
+	f = open(directory, 'r')
+	parameters = f.read().split()
+	
+	for i in range(len(parameters)):
+		if parameters[i] == 'X_fraction':                 
+			xH = eval(parameters[i+2])   
+			break
+
+	return xH
+	
+	
+	
+	
+	
+	
