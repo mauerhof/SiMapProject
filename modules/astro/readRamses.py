@@ -1,3 +1,5 @@
+import numpy as np
+
 def look_for(directory, parameter):
 	
 	f = open(directory, 'r')
@@ -40,17 +42,17 @@ def read_groups(directory, timestep):
 	f = open(directory, 'r')
 	parameters = f.read().split()
 	
-	groups = []
+	groups = np.array([])
 	
 	for i in range(len(parameters)):
 		if parameters[i] == 'groupL0':
 			break
 	i += 3
-	groups.append(eval(parameters[i]))
+	groups = np.append(groups, eval(parameters[i]))
 	i += 1
 	while(parameters[i] != 'groupL1'):
 		if (eval(parameters[i]) > eval(parameters[i-1])):
-			groups.append(eval(parameters[i]))
+			groups = np.append(groups, eval(parameters[i]))
 		i += 1
 	
 	return groups        
