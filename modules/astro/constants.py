@@ -21,6 +21,7 @@ qe_cgs = 1.60218e-19
 ev_to_erg = 1.60218e-12
 A_to_cm = 10e-8
 Lsun_cgs = 3.84e33
+ev_to_ryd = ev_to_erg/ryd_to_erg
 
 SiI, HI, SiII, HeI, SiIII, SiIV, HeII = 0,1,2,3,4,5,6
 
