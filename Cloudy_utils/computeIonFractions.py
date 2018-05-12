@@ -2,8 +2,16 @@ from minirats.utils.py.cellutils import py_cell_utils as cu
 from astro import readRamses as rr
 from astro import constants as c
 from astro import SEDutils as su
+from algebra import utils as alg
 import numpy as np
 import math
+from mpi4py import MPI
+
+
+comm = MPI.COMM_WORLD
+size = comm.Get_size()
+print size
+rank = comm.Get_rank()
 
 
 #  This part contains variables that the user chooses for each output.  Another thing to choose at cloudy S definition
@@ -44,4 +52,7 @@ ratesRamses = np.empty([ions])
 for icells in range(1):
 	for i in range(ions):
 		ratesRamses[i] = np.sum(cells[icells,len(indices):len(indices)+nBins:1]*ramsesCSN[i,:])*units[0]/units[2]
-	print ratesRamses
+	
+	cloudyI = alg.solveTriangularMatrix(ratesRamses, cloudyC)
+	if rank==0: 
+		print rank, cloudyI
