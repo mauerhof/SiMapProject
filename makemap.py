@@ -41,21 +41,27 @@ for timestep in range(13,16):
 
 	Tgas = cells[:,1]/cells[:,0]*1.67e-24/1.38062e-16*(units[0]/units[2])**2
 	
-	rateSiI = np.zeros(ncells)
+	rateSi = np.zeros([ncells,4])
 	for i in range(ncells):
-		rateSiI[i] = np.sum(cells[i,6:6+nBins:1]*sigmaSi[0,:])
-	rateSiI = rateSiI*units[0]/units[2]
+		for j in range(4):
+			rateSi[i,j] = np.sum(cells[i,6:6+nBins:1]*sigmaSi[j,:])
+	rateSi = rateSi*units[0]/units[2]
+	romanNum = ['I', 'II', 'III', 'IV']
+	
+	normalizedMass = cells[:,0]*np.power(8*np.ones_like(cells[:,0]),-cell_l)
+	normalizedMass = normalizedMass/np.sum(normalizedMass)
 
 
 	nx, ny = cu.get_map_nxny(lmax, xlim[0], xlim[1], ylim[0], ylim[1])
-
-	TempMap, w = cu.make_map(lmax, False, xlim[0], xlim[1], ylim[0], ylim[1], zlim[0], zlim[1], np.log10(rateSiI), cells[:,0], cell_pos[:,0], cell_pos[:,1], cell_pos[:,2], cell_l, nx, ny)
-	plt.imshow(TempMap, origin='lower')
-	plt.clim(-12.2, -6)
-	cbar = plt.colorbar()
-	cbar.set_label(r'Photoionization rate of SiI, log[$s^{-1}$]')
-	plt.savefig('SiIrate_Dust_'+str(timestep)+'.png')
-	plt.close()
+	
+	for i in range(4):
+		TempMap, w = cu.make_map(lmax, False, xlim[0], xlim[1], ylim[0], ylim[1], zlim[0], zlim[1], np.log10(rateSi[:,i]), cells[:,0], cell_pos[:,0], cell_pos[:,1], cell_pos[:,2], cell_l, nx, ny)
+		plt.imshow(TempMap, origin='lower')
+		#plt.clim(-12.2, -6)
+		cbar = plt.colorbar()
+		cbar.set_label(r'Photoionization rate of Si'+romanNum[i]+', log[$s^{-1}$]')
+		plt.savefig('Si'+romanNum[i]+'rate_Dust_'+str(timestep)+'.png')
+		plt.close()
 
 	TempMap, w = cu.make_map(lmax, False, xlim[0], xlim[1], ylim[0], ylim[1], zlim[0], zlim[1], np.log10(Tgas), cells[:,0], cell_pos[:,0], cell_pos[:,1], cell_pos[:,2], cell_l, nx, ny)
 	plt.imshow(TempMap, origin='lower')
@@ -73,4 +79,13 @@ for timestep in range(13,16):
 	plt.imshow(TempMap, origin='lower')
 	plt.colorbar()
 	plt.savefig('Z_Map_'+str(timestep)+'.png') 
+	plt.close()
+	
+	plt.figure(figsize=(14, 8))
+	plt.scatter(np.log10(cells[:,0]), np.log10(Tgas), s=0.05, marker='.', c=np.log10(normalizedMass))
+	cbar = plt.colorbar()
+	cbar.set_label('f (mass)')
+	plt.xlabel('log(nH[cm-3])')
+	plt.ylabel('log(T [K])')
+	plt.savefig('phaseDiagram_'+str(timestep)+'.png')
 	plt.close()
