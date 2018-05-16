@@ -18,7 +18,8 @@ xlim = [0.47,0.53]
 ylim = [0.47,0.53]
 zlim = [0.495,0.505]
 
-sigmaSi = np.genfromtxt('SiCSN.dat', unpack=True)
+sigmaSi = np.genfromtxt(ramDir+'SiCSN.dat', unpack=True)
+name = ''
 
 
 
@@ -60,25 +61,25 @@ for timestep in range(13,16):
 		#plt.clim(-12.2, -6)
 		cbar = plt.colorbar()
 		cbar.set_label(r'Photoionization rate of Si'+romanNum[i]+', log[$s^{-1}$]')
-		plt.savefig('Si'+romanNum[i]+'rate_Dust_'+str(timestep)+'.png')
+		plt.savefig('Si'+romanNum[i]+'_rate_'+name+'_'+str(timestep)+'.png')
 		plt.close()
 
 	TempMap, w = cu.make_map(lmax, False, xlim[0], xlim[1], ylim[0], ylim[1], zlim[0], zlim[1], np.log10(Tgas), cells[:,0], cell_pos[:,0], cell_pos[:,1], cell_pos[:,2], cell_l, nx, ny)
 	plt.imshow(TempMap, origin='lower')
 	plt.colorbar()
-	plt.savefig('T_Map_'+str(timestep)+'.png') 
+	plt.savefig('T_Map_'+name+'_'+str(timestep)+'.png') 
 	plt.close()
 
 	TempMap, w = cu.make_map(lmax, False, xlim[0], xlim[1], ylim[0], ylim[1], zlim[0], zlim[1], cells[:,3], cells[:,0], cell_pos[:,0], cell_pos[:,1], cell_pos[:,2], cell_l, nx, ny)
 	plt.imshow(TempMap, origin='lower')
 	plt.colorbar()
-	plt.savefig('HII_Map_'+str(timestep)+'.png') 
+	plt.savefig('HII_Map_'+name+'_'+str(timestep)+'.png') 
 	plt.close()
 
 	TempMap, w = cu.make_map(lmax, False, xlim[0], xlim[1], ylim[0], ylim[1], zlim[0], zlim[1], cells[:,2], cells[:,0], cell_pos[:,0], cell_pos[:,1], cell_pos[:,2], cell_l, nx, ny)
 	plt.imshow(TempMap, origin='lower')
 	plt.colorbar()
-	plt.savefig('Z_Map_'+str(timestep)+'.png') 
+	plt.savefig('Z_Map_'+name+'_'+str(timestep)+'.png') 
 	plt.close()
 	
 	plt.figure(figsize=(10, 6))
@@ -87,5 +88,5 @@ for timestep in range(13,16):
 	cbar.set_label('f (mass)')
 	plt.xlabel('log(nH[cm-3])')
 	plt.ylabel('log(T [K])')
-	plt.savefig('phaseDiagram_'+str(timestep)+'.png')
+	plt.savefig('phaseDiagram_'+name+'_'+str(timestep)+'.png')
 	plt.close()
