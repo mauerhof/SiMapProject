@@ -81,8 +81,8 @@ for timestep in range(13,16):
 	plt.savefig('Z_Map_'+str(timestep)+'.png') 
 	plt.close()
 	
-	plt.figure(figsize=(14, 8))
-	plt.scatter(np.log10(cells[:,0]), np.log10(Tgas), s=1, marker='.', faceolor='0.5', lw=0, c=np.log10(normalizedMass))
+	plt.figure(figsize=(10, 6))
+	plt.scatter(np.log10(cells[:,0]), np.log10(Tgas), s=1, marker='.', facecolor='0.5', lw=0, c=np.log10(normalizedMass))
 	cbar = plt.colorbar()
 	cbar.set_label('f (mass)')
 	plt.xlabel('log(nH[cm-3])')
