@@ -1,6 +1,6 @@
 PROGRAM computeSiFractions
 	use py_cell_utils
-	use mpi
+!~ 	use mpi
 	!use SED_module,only:getSEDcsn
 	
 	
@@ -37,16 +37,16 @@ PROGRAM computeSiFractions
 	
 	
 	!Commands related to mpi
-	call MPI_INIT(ierr)
-	call MPI_COMM_RANK(MPI_COMM_WORLD, rank, ierr)
-	call MPI_COMM_SIZE(MPI_COMM_WORLD, npsize, ierr)
-	t1=MPI_WTIME()										!Initialize time to display the total time of execution
-	open(unit=14,status='scratch')
-    rewind(14)
-    write (14,*) rank
-    rewind(14)											!5 lines to create a character of the rank of the core,  to put it in names of output files   (more straightforward way ?)
-    read  (14,*) ranktxt
-    close (14)
+!~ 	call MPI_INIT(ierr)
+!~ 	call MPI_COMM_RANK(MPI_COMM_WORLD, rank, ierr)
+!~ 	call MPI_COMM_SIZE(MPI_COMM_WORLD, npsize, ierr)
+!~ 	t1=MPI_WTIME()										!Initialize time to display the total time of execution
+!~ 	open(unit=14,status='scratch')
+!~     rewind(14)
+!~     write (14,*) rank
+!~     rewind(14)											!5 lines to create a character of the rank of the core,  to put it in names of output files   (more straightforward way ?)
+!~     read  (14,*) ranktxt
+!~     close (14)
 	
 
 	!!!Can obviously improve this part to import numbers from ramses output,  would be more elegant
@@ -69,6 +69,8 @@ PROGRAM computeSiFractions
 		read(2,*) sigmaN(i,:)
 	end do
 	
+	print*, sigmaN
+	
 !~ 	ramDir = '/Users/mauerhof/Documents/RamsesFiles/stromgren/'
 	ramDir = '../'
 	ts = 16; levelmax = 13 ; center(:) = (/ 5d-1, 5d-1, 5d-1/) ; radius = 1d-1 ; readRT = .true.
@@ -78,81 +80,81 @@ PROGRAM computeSiFractions
 	usefulIndices(size(hydroIndices)+1:size(hydroIndices)+size(binIndices)) = binIndices
 	
 	
-	call count_cells(ramDir,ts,levelmax,ncells,center,radius)   !return the total number of cells 
+!~ 	call count_cells(ramDir,ts,levelmax,ncells,center,radius)   !return the total number of cells 
 	
-	chunksize = (ncells+npsize-1)/npsize							!Size of the array for each core.  A little bit smaller for the last core.
-	if (rank==npsize-1) chunksize = ncells - (npsize-1)*chunksize	
+!~ 	chunksize = (ncells+npsize-1)/npsize							!Size of the array for each core.  A little bit smaller for the last core.
+!~ 	if (rank==npsize-1) chunksize = ncells - (npsize-1)*chunksize	
 	
 
 	
-	if(rank==master) then		!The master reads all the data
-		allocate(cells(ncells,nfields))
-		allocate(cell_pos(ncells,3))
-		allocate(cell_level(ncells))
-		call read_cells_hydro(ramDir,ts,levelmax,cells,cell_pos,cell_level,ncells,usefulIndices,nfields,center,radius,readRT)
+!~ 	if(rank==master) then		!The master reads all the data
+!~ 		allocate(cells(ncells,nfields))
+!~ 		allocate(cell_pos(ncells,3))
+!~ 		allocate(cell_level(ncells))
+!~ 		call read_cells_hydro(ramDir,ts,levelmax,cells,cell_pos,cell_level,ncells,usefulIndices,nfields,center,radius,readRT)
 		
 
-		do i=1,npsize-2			!Then the master sends each piece of data to the other threads
-			call MPI_SEND(cells(i*chunksize+1:(i+1)*chunksize,:),chunksize*nfields,MPI_DOUBLE_PRECISION,i,11,MPI_COMM_WORLD,ierr)
-		end do
-		call MPI_SEND(cells((npsize-1)*chunksize+1:ncells,:),(ncells-(npsize-1)*chunksize)*nfields,MPI_DOUBLE_PRECISION,npsize-1,11,MPI_COMM_WORLD,ierr)  !The last thread data has another size
-	else
-		allocate(cells(chunksize,nfields))		!The other cores receive their piece of data
-		call MPI_RECV(cells,chunksize*nfields,MPI_DOUBLE_PRECISION,master,11,MPI_COMM_WORLD,status0,ierr)
-	end if
+!~ 		do i=1,npsize-2			!Then the master sends each piece of data to the other threads
+!~ 			call MPI_SEND(cells(i*chunksize+1:(i+1)*chunksize,:),chunksize*nfields,MPI_DOUBLE_PRECISION,i,11,MPI_COMM_WORLD,ierr)
+!~ 		end do
+!~ 		call MPI_SEND(cells((npsize-1)*chunksize+1:ncells,:),(ncells-(npsize-1)*chunksize)*nfields,MPI_DOUBLE_PRECISION,npsize-1,11,MPI_COMM_WORLD,ierr)  !The last thread data has another size
+!~ 	else
+!~ 		allocate(cells(chunksize,nfields))		!The other cores receive their piece of data
+!~ 		call MPI_RECV(cells,chunksize*nfields,MPI_DOUBLE_PRECISION,master,11,MPI_COMM_WORLD,status0,ierr)
+!~ 	end if
 	
-        laserWidth = 5d-3
-        EC(:) = (/ 9d0, 1.7d1, 3.4d1, 4.6d1 /)
-        do i=1,nBinC
-           cloudyCoeffs(i,:) = (/ (getSEDcsn(Ls, SEDs(:,10,2), size(Ls), EC(j)-laserWidth*EC(j), EC(j)+laserWidth*EC(j), orderIonE(i))/(EC(j)*ev_to_erg), j=1,nBinC) /)
-        print*, cloudyCoeffs(i,:)
-        end do
+!~         laserWidth = 5d-3
+!~         EC(:) = (/ 9d0, 1.7d1, 3.4d1, 4.6d1 /)
+!~         do i=1,nBinC
+!~            cloudyCoeffs(i,:) = (/ (getSEDcsn(Ls, SEDs(:,10,2), size(Ls), EC(j)-laserWidth*EC(j), EC(j)+laserWidth*EC(j), orderIonE(i))/(EC(j)*ev_to_erg), j=1,nBinC) /)
+!~         print*, cloudyCoeffs(i,:)
+!~         end do
 
-	!open(unit=rank+20,file='rates'//trim(ranktxt)//'.dat',status='replace',form='formatted',action='write')   !To check if the rates are reproduced correctly
+!~ 	!open(unit=rank+20,file='rates'//trim(ranktxt)//'.dat',status='replace',form='formatted',action='write')   !To check if the rates are reproduced correctly
 	
 	
-	!Loop over all the cells
-	do icells=1,5
-		open(unit=icells,file='./cloudy.in',status='replace',form='formatted',action='write')  !To write the outputs
-		open(unit=icells+10000000,status='scratch')
-		rewind(14)
-		write (14,*) icells
-		rewind(14)											!5 lines to create a character of the rank of the core,  to put it in names of output files   (more straightforward way ?)
-		read  (14,*) icellstxt
-		close (14)
-		!print*, icellstxt
-		ratesRamses(:) = (/ (sum(cells(icells,size(hydroIndices)+1:size(hydroIndices)+nBinR)*sigmaN(i,:))*unit_length/unit_time, i=1,nIon) /)  !Photoionization rate of each Si ion, computed from ramses output. This is the inhomogeneous part of the linear system cited above
+!~ 	!Loop over all the cells
+!~ 	do icells=1,5
+!~ 		open(unit=icells,file='./cloudy.in',status='replace',form='formatted',action='write')  !To write the outputs
+!~ 		open(unit=icells+10000000,status='scratch')
+!~ 		rewind(14)
+!~ 		write (14,*) icells
+!~ 		rewind(14)											!5 lines to create a character of the rank of the core,  to put it in names of output files   (more straightforward way ?)
+!~ 		read  (14,*) icellstxt
+!~ 		close (14)
+!~ 		!print*, icellstxt
+!~ 		ratesRamses(:) = (/ (sum(cells(icells,size(hydroIndices)+1:size(hydroIndices)+nBinR)*sigmaN(i,:))*unit_length/unit_time, i=1,nIon) /)  !Photoionization rate of each Si ion, computed from ramses output. This is the inhomogeneous part of the linear system cited above
 
-		call solveTriangularMatrix(nIon,ratesRamses(:),cloudyCoeffs(:,:),cloudyJ(:))   !Solves the linear system to find to correct Krome inputs
-		print*,cloudyJ(:)
+!~ 		call solveTriangularMatrix(nIon,ratesRamses(:),cloudyCoeffs(:,:),cloudyJ(:))   !Solves the linear system to find to correct Krome inputs
+!~ 		print*,cloudyJ(:)
 
-		nH = xH*cells(icells,1)		
-		nHe = 0.25*yHe*cells(icells,1)		
+!~ 		nH = xH*cells(icells,1)		
+!~ 		nHe = 0.25*yHe*cells(icells,1)		
 		
-	!	densities(:) = (/ nH*cells(icells,3) + nHe*(cells(icells,4)+2*cells(icells,5)), nH*(1-cells(icells,3)), nHe*(1-cells(icells,4)-cells(icells,5)), 3.467d-6, nH*cells(icells,3), nHe*cells(icells,4), 1d-20, nHe*cells(icells,5), 1d-20, 1d-20, 1d-20 /) !(E, HI, HeI, SiI, HII, HeII, SiII, HeIII, SiIII, SiIV, SiV), as needed for Krome
+!~ 	!	densities(:) = (/ nH*cells(icells,3) + nHe*(cells(icells,4)+2*cells(icells,5)), nH*(1-cells(icells,3)), nHe*(1-cells(icells,4)-cells(icells,5)), 3.467d-6, nH*cells(icells,3), nHe*cells(icells,4), 1d-20, nHe*cells(icells,5), 1d-20, 1d-20, 1d-20 /) !(E, HI, HeI, SiI, HII, HeII, SiII, HeIII, SiIII, SiIV, SiV), as needed for Krome
 
-		Tgas = cells(icells,2)/cells(icells,1)*1.66d-24/1.38062d-16*(unit_length/unit_time)**2/(xH*(1+cells(icells,3)) + 0.25*yHe*(1+cells(icells,4)+2*cells(icells,5)))  !Trust me
-		!print*,Tgas
+!~ 		Tgas = cells(icells,2)/cells(icells,1)*1.66d-24/1.38062d-16*(unit_length/unit_time)**2/(xH*(1+cells(icells,3)) + 0.25*yHe*(1+cells(icells,4)+2*cells(icells,5)))  !Trust me
+!~ 		!print*,Tgas
 		
-		write(icells,"(a)") 'hden -1'
-		write(icells,"(a)")'abundances he =-1.1 li =-40 be =-40 b =-40 c =-40 n =-40 o =-40'
-		write(icells,"(a)") 'continue f =-40 ne =-40 na =-40 mg =-40 '
-		write(icells,"(a)") 'continue al =-40 si =-4.46 p =-40 s =-40 cl=-40 ar=-40 k =-40 '
-		write(icells,"(a)") 'continue ca =-40 sc =-40 ti =-40 v =-40 cr =-40 mn =-40 fe =-40 '
-		write(icells,"(a)") 'continue co =-40 ni =-40 cu =-40 zn =-40 '
-		write(icells,"(a,F10.3,F10.3)") 'element hydrogen ionization ', 1 - cells(icells,3), cells(icells,3)
-		write(icells,"(a,F10.3,F10.3,F10.3)") 'element helium ionization ', 1 - cells(icells,4) - cells(icells,5), cells(icells,4), cells(icells,5)
-		do i=1,nBinC
-			write(icells,"(a,F10.3,a)") 'Laser, frequency = ', EC(i)*ev_to_ryd, ' ryd rel width 0.005'
-			write(icells,"(a,ES10.3,a)") 'intensity total ', cloudyJ(i), ' linear'
-		end do
-		write(icells,"(a,F10.3)") 'const temp', log10(Tgas)
-		write(icells,"(a)") 'sphere'
-		write(icells,"(a)") 'stop zone 1'
-		write(icells,"(a)") 'save averages, file="ion'//trim(icellstxt)//'.avr", print last iteration'
-		write(icells,"(a)") 'ionization, silicone 1'//NEW_LINE('')//'ionization, silicone 2'//NEW_LINE('')//'ionization, silicone 3'//NEW_LINE('')//'ionization, silicone 4'//NEW_LINE('')//'ionization, silicone 5'//NEW_LINE('')//'end of averages'
-		close(icells)
-		call system('/Users/mauerhof/Documents/c17.00/source/cloudy.exe < cloudy.in > cloudy.out')
+!~ 		write(icells,"(a)") 'hden -1'
+!~ 		write(icells,"(a)")'abundances he =-1.1 li =-40 be =-40 b =-40 c =-40 n =-40 o =-40'
+!~ 		write(icells,"(a)") 'continue f =-40 ne =-40 na =-40 mg =-40 '
+!~ 		write(icells,"(a)") 'continue al =-40 si =-4.46 p =-40 s =-40 cl=-40 ar=-40 k =-40 '
+!~ 		write(icells,"(a)") 'continue ca =-40 sc =-40 ti =-40 v =-40 cr =-40 mn =-40 fe =-40 '
+!~ 		write(icells,"(a)") 'continue co =-40 ni =-40 cu =-40 zn =-40 '
+!~ 		write(icells,"(a,F10.3,F10.3)") 'element hydrogen ionization ', 1 - cells(icells,3), cells(icells,3)
+!~ 		write(icells,"(a,F10.3,F10.3,F10.3)") 'element helium ionization ', 1 - cells(icells,4) - cells(icells,5), cells(icells,4), cells(icells,5)
+!~ 		do i=1,nBinC
+!~ 			write(icells,"(a,F10.3,a)") 'Laser, frequency = ', EC(i)*ev_to_ryd, ' ryd rel width 0.005'
+!~ 			write(icells,"(a,ES10.3,a)") 'intensity total ', cloudyJ(i), ' linear'
+!~ 		end do
+!~ 		write(icells,"(a,F10.3)") 'const temp', log10(Tgas)
+!~ 		write(icells,"(a)") 'sphere'
+!~ 		write(icells,"(a)") 'stop zone 1'
+!~ 		write(icells,"(a)") 'save averages, file="ion'//trim(icellstxt)//'.avr", print last iteration'
+!~ 		write(icells,"(a)") 'ionization, silicone 1'//NEW_LINE('')//'ionization, silicone 2'//NEW_LINE('')//'ionization, silicone 3'//NEW_LINE('')//'ionization, silicone 4'//NEW_LINE('')//'ionization, silicone 5'//NEW_LINE('')//'end of averages'
+!~ 		close(icells)
+!~ 		call system('/Users/mauerhof/Documents/c17.00/source/cloudy.exe < cloudy.in > cloudy.out')
 		!CloudyString = 'hden -1 '//NEW_LINE('')// 'abundances he =-1.1 li =-40 be =-40 b =-40 c =-40 n =-40 o =-40 '//NEW_LINE('')// 'continue f =-40 ne =-40 na =-40 mg =-40 '//NEW_LINE('')// 'continue al =-40 si =-4.46 p =-40 s =-40 cl=-40 ar=-40 k =-40 '//NEW_LINE('')// 'continue ca =-40 sc =-40 ti =-40 v =-40 cr =-40 mn =-40 fe =-40 '//NEW_LINE('')// 'continue co =-40 ni =-40 cu =-40 zn =-40 '//NEW_LINE('')// 'element hydrogen ionization ' !+ 1-cells(icells,3) + ' ' + (data_ramses[j,1]) + ''//NEW_LINE('')// 'element helium ionization ' + (1-data_ramses[j, 2]-data_ramses[j,3]) + ' ' + (data_ramses[j,2]) + ' ' + (data_ramses[j,3]) + '\n'
 !		for i in range(numberofBins):
 !		CloudyString = CloudyString + 'Laser, frequency = ' + (energiesRyd[i]) + ' ryd rel width 0.005 '//NEW_LINE('')// 'intensity total ' + (9.79183e7*data_ramses[j,4+i]*energiesErg[i]) + ' linear \n'
@@ -164,13 +166,13 @@ PROGRAM computeSiFractions
 !		write(rank+20,fmt=*) ''
 		
 !		write(rank,fmt=*) densities(4),densities(7),densities(9),densities(10),densities(11)   !Writes output for one cell
-	end do
+!~ 	end do
 	!cloudyString = 'test a'//NEW_LINE('')//'test '
 	!print*,cloudyString
 !	close(rank) !; close(rank+20)
-	deallocate(ages, Zs, Ls, SEDs)
+!~ 	deallocate(ages, Zs, Ls, SEDs)
 !	if (rank==master) then
-		deallocate(cells,cell_pos,cell_level)
+!~ 		deallocate(cells,cell_pos,cell_level)
 !	else
 !		deallocate(cells)
 !	end if
