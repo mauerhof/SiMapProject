@@ -16,12 +16,14 @@ myr_to_s = 3.1556926e13
 ryd_to_erg = 2.17987e-11
 ly_to_cm = 9.461e17
 me_cgs = 9.10938e-28
+mp_cgs = 1.672621898e-24
 epsilon0_cgs = 8.85419e-21
 qe_cgs = 1.60218e-19
 ev_to_erg = 1.60218e-12
 A_to_cm = 10e-8
 Lsun_cgs = 3.84e33
 ev_to_ryd = ev_to_erg/ryd_to_erg
+ryd_to_Hz = 3.28984e15
 
 SiI, HI, SiII, HeI, SiIII, SiIV, HeII = 0,1,2,3,4,5,6
 

@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def look_for(directory, parameter):
 	
 	f = open(directory, 'r')

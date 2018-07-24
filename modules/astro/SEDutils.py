@@ -37,6 +37,9 @@ def readRamsesSEDs(sedDir):
            spectra[:,iAge,iZ] = c.Lsun_cgs*spectrum  
 
    return {'ZBins':ZBins, 'ageBins':ageBins, 'lambdaBins':lambdaBins,'spectra':spectra, 'nLambda':nLambda}   #spectra are in erg/s/A/Msun
+   
+   
+   
 
 
 def photoCS(l, element, level):     #l in Angstroms,  level starting from 1
@@ -44,8 +47,8 @@ def photoCS(l, element, level):     #l in Angstroms,  level starting from 1
 	if element == 'H':
 		
 		if ((level > 1) or (level < 1)):
-			print ('The ionization level that you chose either doesn\' exist or is not implemented')
-			return
+			print ('The ionization level that you chose either doesn\'t exist or is not implemented')
+			return -np.ones_like(l)
 		
 		E0 = np.array([0.4298]) #erg 
 		cs0 = np.array([5.475e-14]) #cm^2
@@ -59,8 +62,8 @@ def photoCS(l, element, level):     #l in Angstroms,  level starting from 1
 	elif element == 'He':
 		
 		if ((level > 2) or (level < 1)):
-			print ('The ionization level that you chose either doesn\' exist or is not implemented')
-			return
+			print ('The ionization level that you chose either doesn\'t exist or is not implemented')
+			return -np.ones_like(l)
 		
 		E0 = np.array([13.61, 1.720]) #erg 
 		cs0 = np.array([9.492e-16, 1.369e-14]) #cm^2
@@ -74,8 +77,8 @@ def photoCS(l, element, level):     #l in Angstroms,  level starting from 1
 	elif element == 'Si':
 		
 		if ((level > 4) or (level < 1)):
-			print ('The ionization level that you chose either doesn\' exist or is not implemented')
-			return
+			print ('The ionization level that you chose either doesn\'t exist or is not implemented')
+			return -np.ones_like(l)
 		
 		E0 = np.array([2.317e1, 2.556e0, 1.659e-1, 12.88e0])
 		cs0 = np.array([2.506e-17, 4.14e-18, 5.79e-22, 6.083e-18])
@@ -87,81 +90,83 @@ def photoCS(l, element, level):     #l in Angstroms,  level starting from 1
 		
 		limit = c.SiIon
 	else:
-		print ('The element that you chose either doesn\' exist or is not implemented')
-		return
+		print ('The element that you chose either doesn\'t exist or is not implemented')
+		return -np.ones_like(l)
 		
+	n = len(l)
+	cs = np.zeros(n)
 	
-	
-	if c.hc_AeV/l < limit[level-1] :
-		return 0e0
-	else :
-		xx = c.hc_AeV/l/E0[level-1] - y0[level-1]
-		yy = math.sqrt(xx**2 + y1[level-1]**2)
-		return cs0[level-1]*((xx - 1)**2 + yw[level-1]**2) * math.pow(yy, 0.5*P[level-1]-5.5)/math.pow(1 + math.sqrt(yy/ya[level-1]), P[level-1])
+	for i in range(n):
+		if (not c.hc_AeV/l[i] < limit[level-1]) :
+			xx = c.hc_AeV/l[i]/E0[level-1] - y0[level-1]
+			yy = math.sqrt(xx**2 + y1[level-1]**2)
+			cs[i] = cs0[level-1]*((xx - 1)**2 + yw[level-1]**2) * math.pow(yy, 0.5*P[level-1]-5.5)/math.pow(1 + math.sqrt(yy/ya[level-1]), P[level-1])
 
+	return cs
+	
+	
 	
 
 def csn(J, Ls, l0, l1, element, level):
 	
-	if element == 'H':
-		if level > 1:
-			print ('The ionization level that you chose either doesn\' exist or is not implemented')
-			return
-	elif element == 'He':
-		if level > 2:
-			print ('The ionization level that you chose either doesn\' exist or is not implemented')
-			return
-	elif element == 'Si':
-		
-		if level > 4:
-			print ('The ionization level that you chose either doesn\' exist or is not implemented')
-			return
-	else:
-		print ('The element that you chose either doesn\' exist or is not implemented')
-		return
-	
 	if l0 > l1:
 		l0, l1 = l1, l0
 	
 	Ls_small = Ls[(Ls < l1) & (Ls > l0)]
 	J_small = J[(Ls < l1) & (Ls > l0)]
-	cs = np.empty([Ls_small.size])
-	for i in range(cs.size):
-		cs[i] = photoCS(Ls_small[i], element, level)
+	cs = photoCS(Ls_small[:], element, level)
 	
-	return np.trapz(J_small*Ls_small*cs, Ls_small)/np.trapz(J_small*Ls_small, Ls_small)
+	if (cs[0] < -0.1):
+		return
+	else:
+		return np.trapz(J_small*Ls_small*cs, Ls_small)/np.trapz(J_small*Ls_small, Ls_small)
 
 
 
 def cse(J, Ls, l0, l1, element, level):
-	
-	if element == 'H':
-		if level > 1:
-			print ('The ionization level that you chose either doesn\' exist or is not implemented')
-			return
-	elif element == 'He':
-		if level > 2:
-			print ('The ionization level that you chose either doesn\' exist or is not implemented')
-			return
-	elif element == 'Si':
 		
-		if level > 4:
-			print ('The ionization level that you chose either doesn\' exist or is not implemented')
-			return
-	else:
-		print ('The element that you chose either doesn\' exist or is not implemented')
+	if l0 > l1:
+		l0, l1 = l1, l0
+	
+	Ls_small = Ls[(Ls < l1) & (Ls > l0)]
+	J_small = J[(Ls < l1) & (Ls > l0)]
+	cs = photoCS(Ls_small[:], element, level)
+	
+	if (cs[0] < -0.1):
 		return
+	else:
+		return np.trapz(J_small*cs, Ls_small)/np.trapz(J_small, Ls_small)
+	
+
+
+def photoRate(J, Ls, l0, l1, element, level):
 	
 	if l0 > l1:
 		l0, l1 = l1, l0
 	
 	Ls_small = Ls[(Ls < l1) & (Ls > l0)]
 	J_small = J[(Ls < l1) & (Ls > l0)]
-	cs = np.empty([Ls_small.size])
-	for i in range(cs.size):
-		cs[i] = photoCS(Ls_small[i], element, level)
+	cs = photoCS(Ls_small[:], element, level)
 	
-	return np.trapz(J_small*cs, Ls_small)/np.trapz(J_small, Ls_small)
+	if (cs[0] < -0.1):
+		return
+	else:
+		return np.trapz(J_small*cs*Ls_small*1e-8, Ls_small)/c.h_cgs/c.c_cgs
 	
 	
 	
+#The intensities of the bins of Ramses are in s^-1 * cm*-2  (once code units are transformed in CGS). This is the way to compute this quantity from a SED in erg / s / cm^2 / A
+def fluxRamses(J, Ls, l0, l1):   
+	
+	if l0 > l1:
+		l0, l1 = l1, l0
+	
+	Ls_small = Ls[(Ls < l1) & (Ls > l0)]
+	J_small = J[(Ls < l1) & (Ls > l0)]
+
+	
+	return np.trapz(J_small*Ls_small*1e-8, Ls_small)/c.h_cgs/c.c_cgs    
+	
+	
+
+
