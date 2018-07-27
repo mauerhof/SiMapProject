@@ -94,4 +94,21 @@ def read_lmax(directory, timestep):
 	
 	
 	
+def read_boxlen(directory, timestep):
+	
+	tsString = '_' + format(timestep, "05")
+	directory = directory+'output'+tsString+'/info'+tsString+'.txt'
+	
+	f = open(directory, 'r')
+	parameters = f.read().split()
+	
+	for i in range(len(parameters)):
+		if parameters[i] == 'boxlen':                 
+			boxlen = eval(parameters[i+2])   
+			break
+
+	return boxlen
+	
+	
+	
 	
