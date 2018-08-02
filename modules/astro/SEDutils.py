@@ -1,6 +1,7 @@
 import numpy as np
 from astro import constants as c
 import math
+from matplotlib import pyplot as plt
 
 
 def readRamsesSEDs(sedDir):
@@ -39,6 +40,22 @@ def readRamsesSEDs(sedDir):
    return {'ZBins':ZBins, 'ageBins':ageBins, 'lambdaBins':lambdaBins,'spectra':spectra, 'nLambda':nLambda}   #spectra are in erg/s/A/Msun
    
    
+
+def showSpectrum(flux, wavelength):
+	fig, ax = plt.subplots(figsize=(10,5))
+	ax.loglog(wavelength, flux)
+	ax.set(xlabel='Wavelength [A]', ylabel='flux [erg / s / cm^2]')
+	ax.grid()
+	plt.show()
+	plt.close()
+	
+def saveSpectrum(flux, wavelength, path):
+	fig, ax = plt.subplots(figsize=(10,5))
+	ax.loglog(wavelength, flux)
+	ax.set(xlabel='Wavelength [A]', ylabel='flux [erg / s / cm^2]')
+	ax.grid()
+	fig.savefig(path)
+	plt.close()
    
 
 
