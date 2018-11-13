@@ -1,4 +1,4 @@
-PROGRAM Si_fractions
+PROGRAM neutral_fractions
 
   use krome_main
   use krome_user
@@ -16,17 +16,17 @@ PROGRAM Si_fractions
   real(kind=8)	 		:: t1=0d0, t2=0d0
 
   !Variables for Krome
-  integer,parameter		:: nBinK=krome_nPhotoBins, nsp=krome_nmols, nIon=4, nPhoto=krome_nPhotoRates
+  integer,parameter		:: nBinK=krome_nPhotoBins, nsp=krome_nmols, nIon=12, nPhoto=krome_nPhotoRates
   real(kind=8)                  :: densities(nsp), binsK(nBinK+1)
 
 
   integer(kind=4)               :: ncells, nSEDgroups, nfields, nstars
-  real(kind=8)                  :: rates_Si(nPhoto), nH_i, nHe, nSi, Tgas_i, xHII, xHeII, xHeIII
+  real(kind=8)                  :: photo_rates(nPhoto), nH_i, nHe, nC, nMg, nSi, Tgas_i, xHII, xHeII, xHeIII
   integer(kind=4),allocatable   :: cell_level(:)
-  real(kind=8),allocatable      :: nH(:), Tgas(:), mets(:), cells_rt(:,:), fractions(:,:), Si(:,:), cell_pos(:,:), cells(:,:), nHI(:)
-  real(kind=8),allocatable      :: nH_cpu(:), Tgas_cpu(:), mets_cpu(:), cells_rt_cpu(:,:), fractions_cpu(:,:), Si_cpu(:,:)
-  real(kind=8),allocatable      :: star_pos(:,:),star_age(:),star_mass(:),star_vel(:,:),star_met(:), Si_csn(:,:), Si_csn_help(:,:), star_L(:), star_L_tot(:)
-  integer(kind=4)		:: i, j, k, icells, count, count_tot, narg
+  real(kind=8),allocatable      :: nH(:), Tgas(:), mets(:), cells_rt(:,:), fractions(:,:), neutral(:,:), cell_pos(:,:), cells(:,:), nHI(:)
+  real(kind=8),allocatable      :: nH_cpu(:), Tgas_cpu(:), mets_cpu(:), cells_rt_cpu(:,:), fractions_cpu(:,:), neutral_cpu(:,:)
+  real(kind=8),allocatable      :: star_pos(:,:),star_age(:),star_mass(:),star_vel(:,:),star_met(:), csn(:,:), csn_help(:,:), star_L(:), star_L_tot(:)
+  integer(kind=4)		:: i, j, k, icells, count, narg
   character(2000)               :: parameter_file
   character(10)                 :: type
   type(domain)                  :: compute_dom
@@ -73,11 +73,9 @@ PROGRAM Si_fractions
   
   ! -------------------- master computes the mean-cross-sections -----------------------------------
   nSEDgroups = get_nSEDgroups(ramDir,timestep)
-  allocate(Si_csn(nSEDgroups,nIon)) ; Si_csn = 0d0
+  allocate(csn(nSEDgroups,nIon)) ; csn = 0d0
   if(rank==master) then
 
-     !HERE, CHANGE SO THAT IT WORKS WITH CREATEDOMDUMP
-     
      !get star properties in domain
      type = 'sphere'
      call domain_constructor_from_scratch(compute_dom, type, 5d-1, 5d-1, 5d-1, 1d3) 
@@ -89,29 +87,24 @@ PROGRAM Si_fractions
      call init_SED_table()
 
      !compute SED luminosities,  in #photons/s
-     allocate(star_L(nSEDgroups), star_L_tot(nSEDgroups), Si_csn_help(nSEDgroups,nIon)) ; star_L_tot = 0d0 
+     allocate(star_L(nSEDgroups), star_L_tot(nSEDgroups), csn_help(nSEDgroups,nIon)) ; star_L_tot = 0d0 
      do i=1,nstars
-        call inp_sed_table(star_age(i)/1d3, star_met(i), 1, .false., star_L(:))    !Third variable :  1 for L[#photons/s],  3 for mean energy in bin,  2+2*Iion for mean cross-section,  Iion: 1:HI,2:HeI,3:HeII,4:SiI, etc
+        call inp_sed_table(star_age(i), star_met(i), 1, .false., star_L(:))    !Third variable :  1 for L[#photons/s],  3 for mean energy in bin,  2+2*Iion for mean cross-section,  Iion: 1:HI,2:HeI,3:HeII,4:SiI, etc
         do j=1,nIon
-           call inp_sed_table(star_age(i)/1d3, star_met(i), 24+2*j, .false., Si_csn_help(:,j))
+           call inp_sed_table(star_age(i), star_met(i), 8+2*j, .false., csn_help(:,j))
         end do
 
         do j=1,nSEDgroups
-           Si_csn(j,:) = Si_csn(j,:) + star_L(j)*Si_csn_help(j,:)
+           csn(j,:) = csn(j,:) + star_L(j)*csn_help(j,:)
            star_L_tot(j) = star_L_tot(j) + star_L(j)
         end do
      end do
-     call deallocate_table()
-
-     print*, 'Si_csn (nSEDgroups * nIon)'
      do j=1,nSEDgroups
-        Si_csn(j,:) = Si_csn(j,:)/star_L_tot(j)
-        print*, Si_csn(j,:)
+        csn(j,:) = csn(j,:)/star_L_tot(j)
      end do
-     deallocate(star_age, star_met, star_mass, Si_csn_help)
-     
+     deallocate(star_age, star_met, star_mass, csn_help)
   end if
-  call MPI_BCAST(Si_csn, nSEDgroups*nIon, MPI_DOUBLE_PRECISION, master, MPI_COMM_WORLD, ierr)          !Every process needs Si_csn
+  call MPI_BCAST(csn, nSEDgroups*nIon, MPI_DOUBLE_PRECISION, master, MPI_COMM_WORLD, ierr)          !Every process needs Si_csn
   ! ------------------------------------------------------------------------------------------------
 
 
@@ -131,7 +124,7 @@ PROGRAM Si_fractions
         read(10) fractions
      end if
      close(10)
-  else !NEVER TRIED,  HAVE TO CHECK
+  else
      if(rank==master) then
         call read_leaf_cells(ramDir, timestep, ncells, nfields, cell_pos, cells, cell_level)   ; deallocate(cell_pos,cell_level)
         allocate(nH(ncells), nHI(ncells), Tgas(ncells), mets(ncells), cells_rt(nSEDgroups,ncells), fractions(3,ncells))
@@ -163,108 +156,81 @@ PROGRAM Si_fractions
   ! ------------------------------------------------------------------------------------------------
 
   
+
   !init krome (mandatory)
   call krome_init()
 
   !Where the results are saved
-  allocate(Si_cpu(nIon, chunksize(rank+1))) ; Si_cpu = 0d0
+  allocate(neutral_cpu(nIon/4, chunksize(rank+1)))
+  neutral_cpu = 0d0
 
   call MPI_BARRIER(MPI_COMM_WORLD, ierr)
   
   t2=MPI_WTIME()
-  if(rank==master .and. verbose) then
-     write(*,*) 'ncells = ', ncells
-     write(*,*) 'Initilization finished,  beginning computations after time ', t2-t1
-  end if
-  
-  
+  if(rank==master) write(*,*) 'Initilization finished,  beginning computations after time ', t2-t1
+
   ! -------------------- Loop over all the cells ---------------------------------------------------
   do icells=1,chunksize(rank+1)
 
      !Initialization of values in the cell
      nH_i = nH_cpu(icells)
-     nHe = 7.895d-2*nH_i !Assuming mass fraction of helium of 0.24 
-     nSi = mets_cpu(icells)/0.0134*3.24d-5*nH_i !Assuming solar abundances
+     nHe = 7.895d-2*nH_i !Assuming mass fraction of helium of 0.24
+     nC = mets_cpu(icells)/0.0134*2.69d-4*nH_i
+     nMg = mets_cpu(icells)/0.0134*3.98d-5*nH_i !Assuming solar abundances
+     nSi = mets_cpu(icells)/0.0134*3.24d-5*nH_i
      xHII = fractions_cpu(1,icells) ; xHeII = fractions_cpu(2,icells) ; xHeIII = fractions_cpu(3,icells)
      Tgas_i = Tgas_cpu(icells)
 
-     !Rates for Si are the sum over each radiation group i of the product (flux_i in the cell) *  (mean cross_section_i)   (note that the photo-reaction for H and He are absent of my Krome network)
-     rates_Si(:) = (/ (sum(cells_rt_cpu(:,icells)*Si_csn(:,i)), i=1,nIon) /)
-     !Background rate for SiI,  tested in output 00136 of P13-20h-1Mpc-MUSIC/Zoom-7-10508/SPHINX_run
-     rates_Si(1) = 1d-9
+     !Rates for Si are the sum over each radiation group i of the product (flux_i in the cell) *  (mean cross_section_i)
+     !photo_rates(:) = (/ (sum(cells_rt_cpu(:,icells)*csn(:,i)), i=1,nIon) /)
+     !Hack so that all the SiI is photoionized in SiII, have to check the accuracy of this approximation
+     !photo_rates(1) = min(2*nSi, 1d-9)
+     photo_rates = 0d0
 
 
      !Sets the Krome inut to have the correct photoionization rates (subroutine added by hand in krome_user.f90)
-     call krome_set_photoBin_rates(rates_Si)
+     call krome_set_photoBin_rates(photo_rates)
 
-     
+
      !Computing and writing the outputs
-     
+
      !If the gas is very hot, no need to compute,  all the silicone is in SiV or more ionized
      if(Tgas_i > 1d6) then
-        Si_cpu(:,icells) = (/ 1d-18, 1d-18, 1d-18, 1d-18 /)
+        neutral_cpu(:,icells) = 1d-18
      else
-        !Here, the gas is ~dominated by SiV   
-        if(Tgas_i > 8d4) then
-           densities(:) = (/ max(nH_i*xHII + nHe*(xHeII + 2*xHeIII) + 4*nSi,1d-18), max(nH_i*(1-xHII),1d-18), max(nHe*(1-xHeII-xHeIII),1d-18), 1d-18, max(nH_i*xHII,1d-18), max(nHe*xHeII,1d-18), 1d-18, max(nHe*xHeIII,1d-18), 1d-18, 1d-18, max(nSi,1d-18) /)
-        !Here, the gas is ~dominated by SiIII   
-        elseif(Tgas_i > 2.04d4) then
-           densities(:) = (/ max(nH_i*xHII + nHe*(xHeII + 2*xHeIII) + 2*nSi,1d-18), max(nH_i*(1-xHII),1d-18), max(nHe*(1-xHeII-xHeIII),1d-18), 1d-18, max(nH_i*xHII,1d-18), max(nHe*xHeII,1d-18), 1d-18, max(nHe*xHeIII,1d-18), max(nSi,1d-18), 1d-18, 1d-18 /)
-        !Here, the gas is ~dominated by SiII
-        else
-           densities(:) = (/ max(nH_i*xHII + nHe*(xHeII + 2*xHeIII) + nSi,1d-18), max(nH_i*(1-xHII),1d-18), max(nHe*(1-xHeII-xHeIII),1d-18), 1d-18, max(nH_i*xHII,1d-18), max(nHe*xHeII,1d-18), max(nSi,1d-18), max(nHe*xHeIII,1d-18), 1d-18, 1d-18, 1d-18 /)
-        end if
-        
-        call krome_equilibrium(densities(:), Tgas_i)
+        densities(:) = (/ max(nH_i*xHII + nHe*(xHeII + 2*xHeIII),1d-18), max(nH_i*(1-xHII),1d-18), max(nHe*(1-xHeII-xHeIII),1d-18), max(nC,1d-18), max(nMg,1d-18), max(nSi,1d-18), max(nH_i*xHII,1d-18), max(nHe*xHeII,1d-18), 1d-18, 1d-18, 1d-18, max(nHe*xHeIII,1d-18), 1d-18, 1d-18, 1d-18, 1d-18, 1d-18, 1d-18 /)
 
-        if(max(densities(4), densities(7), densities(9), densities(10), densities(11))/nSi > 1.0001) then  !cell bugs,  < 1/100000,   no real solution
-           count = count + 1
-           print*, 'bug'
-           if(Tgas_i < 2d4) then
-              Si_cpu(:,icells) = (/ 1d-18, nSi, 1d-18, 1d-18 /)
-           elseif(Tgas_i < 1d5) then
-              Si_cpu(:,icells) = (/ 1d-18, 1d-18, nSi, 1d-18 /)
-           else
-              Si_cpu(:,icells) = (/ 1d-18, 1d-18, 1d-18, 1d-18 /)
-           endif
-        !no bug
-        else
-           Si_cpu(:,icells) = (/ max(densities(4),1d-18), max(densities(7),1d-18), max(densities(9),1d-18), max(densities(10),1d-18) /)
-        endif
-      
-        !if(Tgas_i < 1.4d3) print*,Tgas_i, nH_i, densities(4)/nSi
+        call krome_equilibrium(densities(:), Tgas_i,rank,icells)
+
+        neutral_cpu(:,icells) = (/ min(nC,max(densities(4),1d-18)), min(nMg,max(densities(5),1d-18)), min(nSi,max(densities(6),1d-18)) /)
      end if
 
-     if(modulo(icells,100000)==0 .and. verbose) print*,icells, 'cells computed by rank', rank
+     !if(Tgas_i < 2d4) print*, rank, icells, Tgas_i, densities(4)/nC, densities(5)/nMg, densities(6)/nSi
+
+
+     if(modulo(icells,10000)==0 .and. verbose) print*,icells, 'cells computed by rank', rank
   end do
   ! ------------------------------------------------------------------------------------------------
-  
+
 
   ! -------------------- Gather the outputs and write ----------------------------------------------
-  call MPI_REDUCE(count, count_tot, 1, MPI_INTEGER, MPI_SUM, master, MPI_COMM_WORLD, ierr)
-  if(rank==master .and. verbose) write(*,*) count_tot, 'cells had a bug'
-  if(rank==master) allocate(Si(nIon,ncells))
-  call MPI_GATHERV(Si_cpu, chunksize(rank+1)*nIon, MPI_DOUBLE_PRECISION, Si, chunksize*nIon, disp*nIon, MPI_DOUBLE_PRECISION, master, MPI_COMM_WORLD, ierr)
+  if(rank==master) allocate(neutral(nIon/4,ncells))
+  call MPI_GATHERV(neutral_cpu, chunksize(rank+1)*nIon/4, MPI_DOUBLE_PRECISION, neutral, chunksize*nIon/4, disp*nIon/4, MPI_DOUBLE_PRECISION, master, MPI_COMM_WORLD, ierr)
   if(rank==master) then
-     open(unit=11,file=trim(output_path)//'SiI',status='replace',form='unformatted',action='write')
-     write(11) Si(1,:)
+     open(unit=11,file=trim(output_path)//'CI',status='replace',form='unformatted',action='write')
+     write(11) neutral(1,:)
      close(11)
-     open(unit=12,file=trim(output_path)//'SiII',status='replace',form='unformatted',action='write')
-     write(12) Si(2,:)
+     open(unit=12,file=trim(output_path)//'MgI',status='replace',form='unformatted',action='write')
+     write(12) neutral(2,:)
      close(12)
-     open(unit=13,file=trim(output_path)//'SiIII',status='replace',form='unformatted',action='write')
-     write(13) Si(3,:)
+     open(unit=13,file=trim(output_path)//'SiI',status='replace',form='unformatted',action='write')
+     write(13) neutral(3,:)
      close(13)
-     open(unit=14,file=trim(output_path)//'SiIV',status='replace',form='unformatted',action='write')
-     write(14) Si(4,:)
-     close(14)
   end if
   ! ------------------------------------------------------------------------------------------------
   
   
   ! -------------------- Ending of program ---------------------------------------------------------
-  deallocate(Si_cpu, nH_cpu, mets_cpu, cells_rt_cpu, Tgas_cpu, fractions_cpu)
-  if(rank==master) deallocate(Si)
   t1=MPI_WTIME()
   write(*,*) rank, 'computation time :', t1-t2
 
@@ -385,4 +351,4 @@ contains
   end subroutine print_Si_fractions_params
 
 
-END PROGRAM Si_fractions
+END PROGRAM neutral_fractions
