@@ -1,0 +1,54 @@
+!--------------------------------------------------------------------------------
+[ion_fractions]
+  reading_method = default
+  repository = /Users/mauerhof/Documents/RamsesFiles/SIMULATIONS/sphinx/02_F0125_0128/04_rt3
+  snapnum = 23
+  cell_data_file = /Users/mauerhof/Documents/krome/KromeFiles/krome_mpi/test/data
+  output_path = /Users/mauerhof/Documents/RamsesFiles/SIMULATIONS/sphinx/02_F0125_0128/04_rt3/ions2
+  nbundle = 10000
+!--------------------------------------------------------------------------------
+
+!--------------------------------------------------------------------------------
+[ramses]
+  star_reading_method = default
+  #star_info_file      = /Users/mauerhof/Documents/RamsesFiles/SIMULATIONS/P13-20h-1Mpc-MUSIC/Zoom-7-10508/SPHINX_run/Halos/00107/star_info_rascas
+  self_shielding   = F
+  ramses_rt        = T
+  verbose          = T
+  cosmo            = T
+  use_initial_mass = T
+  use_proper_time  = F
+  read_rt_variables = T
+  itemp  = 5
+  imetal = 6
+  ihii   = 7
+  iheii  = 8
+  iheiii = 9
+!--------------------------------------------------------------------------------
+
+!--------------------------------------------------------------------------------
+[worker]
+  verbose = T
+!--------------------------------------------------------------------------------
+
+!--------------------------------------------------------------------------------
+[master]
+  verbose = T
+!--------------------------------------------------------------------------------
+
+!---------------------------------------------------------------------------------
+[spectra]
+  sed_dir = /Users/mauerhof/Documents/seds/bpass100
+  nSEDgroups = 3
+  group_decomp = 13.600, 24.590, 54.420, 100000.0
+  verbose         = T
+!---------------------------------------------------------------------------------
+
+!--------------------------------------------------------------------------------
+[krome]
+  n_elements = 1
+  krome_parameter_file = params_krome.dat
+  verbose = T
+!--------------------------------------------------------------------------------
+
+

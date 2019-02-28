@@ -1,0 +1,56 @@
+!--------------------------------------------------------------------------------
+[ion_fractions]
+  reading_method = default
+  repository = /Users/mauerhof/Documents/RamsesFiles/SIMULATIONS/idealized/G8/newRamses/Dust
+  snapnum = 12
+  cell_data_file = /Users/mauerhof/Documents/krome/KromeFiles/krome_mpi/test/data
+  output_path = /Users/mauerhof/Documents/krome/KromeFiles/krome_mpi/test_G8/out2
+  nbundle = 10000
+!--------------------------------------------------------------------------------
+
+!--------------------------------------------------------------------------------
+[ramses]
+  star_reading_method = Teyssier
+  #star_info_file      = /Users/mauerhof/Documents/RamsesFiles/SIMULATIONS/P13-20h-1Mpc-MUSIC/Zoom-7-10508/SPHINX_run/Halos/00107/star_info_rascas
+  self_shielding   = F
+  ramses_rt        = T
+  verbose          = T
+  cosmo            = F
+  use_initial_mass = F
+  use_proper_time  = F
+  read_rt_variables = T
+  itemp  = 5
+  imetal = 6
+  ihii   = 7
+  iheii  = 8
+  iheiii = 9
+!--------------------------------------------------------------------------------
+
+!--------------------------------------------------------------------------------
+[worker]
+  verbose = F
+!--------------------------------------------------------------------------------
+
+!--------------------------------------------------------------------------------
+[master]
+  verbose = T
+  restart       = F
+  dt_backup     = 15
+!--------------------------------------------------------------------------------
+
+!---------------------------------------------------------------------------------
+[spectra]
+  sed_dir = /Users/mauerhof/Documents/seds/bpass100
+  nSEDgroups = 3
+  group_decomp = 13.600, 24.590, 54.420, 100000.0
+  verbose         = T
+!---------------------------------------------------------------------------------
+
+!--------------------------------------------------------------------------------
+[krome]
+  n_elements = 2
+  krome_parameter_file = params_krome.dat
+  verbose = T
+!--------------------------------------------------------------------------------
+
+
