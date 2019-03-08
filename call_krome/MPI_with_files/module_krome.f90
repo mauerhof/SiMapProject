@@ -57,6 +57,16 @@ contains
           print*, 'Please put at least 1 for n_ions, stopping the program.'
           call stop_mpi
        end if
+       if(i<n_elements) then
+          if(elements(i) == elements(i+1)) then
+             print*, 'The same element is present twice,  please change the krome parameters'
+             call stop_mpi
+          end if
+          if(elements(i) > elements(i+1)) then
+             print*, 'Please put the elements in order of increasing atomic number,  sorry about that.'
+             call stop_mpi
+          end if
+       end if
        if(abundances(i) < 0d0) then
           if(elements(i) > 14) then
              if(rank==0) print*, 'I did not implement the solar abundances for elements heavier than Silicone (14), please but an abundance in the parameter file'
