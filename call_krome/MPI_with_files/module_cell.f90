@@ -80,7 +80,7 @@ contains
        !!!!!!!!! To remove after succesful restarts of simulations with Ramses, to add a "low-energy" photon bin'
        do j=1,n_elements
           if(elements(j) /= 8) then
-             cellgrid(i)%rates(sum(n_ions(1:j-1))+1) = 1d-10
+             cellgrid(i)%rates(sum(n_ions(1:j-1))+1) = 1d-9
           end if
        end do
        !!!!!!!!!
