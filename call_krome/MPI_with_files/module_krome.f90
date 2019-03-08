@@ -77,9 +77,10 @@ contains
     end if
 
   end subroutine init_krome
+  !*************************************************************************
 
 
-
+  !*************************************************************************
   subroutine read_krome_params_file
     implicit none
     integer(kind=4) :: i
@@ -94,19 +95,19 @@ contains
 
 
   !*************************************************************************
-  function get_indices(int)
+  function get_indices(element)
 
     implicit none
 
-    integer(kind=4), intent(in) :: int
+    integer(kind=4), intent(in) :: element
     integer(kind=4)             :: get_indices(5), i, j
 
     get_indices = 0
-    get_indices(1) = 3 + int
-    get_indices(2) = 5 + n_elements + int
+    get_indices(1) = 3 + element
+    get_indices(2) = 5 + n_elements + element
     j=0
-    do i=3,n_ions(int)+1
-       get_indices(i) = 6 + 2*n_elements + int + j - count(mask=(n_ions(1:int-1)<i-1))
+    do i=3,n_ions(element)+1
+       get_indices(i) = 6 + 2*n_elements + element + j - count(mask=(n_ions(1:element-1)<i-1))
        j = j + count(mask=(n_ions>i-2))
     end do
 

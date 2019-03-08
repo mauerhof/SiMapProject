@@ -77,6 +77,13 @@ contains
        do j=1,nPhotoRea
           cellgrid(i)%rates(j) = sum(cells_rt(:,i)*csn(:,j))
        end do
+       !!!!!!!!! To remove after succesful restarts of simulations with Ramses, to add a "low-energy" photon bin'
+       do j=1,n_elements
+          if(elements(j) /= 8) then
+             cellgrid(i)%rates(sum(n_ions(1:j-1))+1) = 1d-10
+          end if
+       end do
+       !!!!!!!!!
        cellgrid(i)%den_ions(:) = 0d0
     end do
 
@@ -162,7 +169,8 @@ contains
           write(nomfich,'(a,a,i5.5,a,a,a,a,i5.5,a,i5.5)') trim(output_path),'/output_',snapnum,'/',trim(element_names(elements(j))),trim(roman_num(k)),'_',snapnum,'.out',icpu
           open(unit=10, file=nomfich, form='unformatted', action='write')
           write(10) ncell
-          write(10) (cellgrid(i)%den_ions(k+l), i=1,ncell)
+          ! write(10) (cellgrid(i)%den_ions(k+l), i=1,ncell)
+          write(10) (cellgrid(i)%nHI+cellgrid(i)%nHII, i=1,ncell)
           close(10)
        end do
        l = l + n_ions(j)
