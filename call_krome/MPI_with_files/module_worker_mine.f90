@@ -3,6 +3,7 @@ module module_worker_mine
   use module_parallel_mpi_mine
   use module_cell
   use module_file
+  use module_krome
 
   private 
 
@@ -22,11 +23,12 @@ contains
     
     character(2000),intent(in)     :: repository, output_path
     integer(kind=4),intent(in)     :: snapnum
-    integer(kind=4)                :: juseless, i, icpu
+    integer(kind=4)                :: juseless, i, icpu, nSEDgroups
     real(kind=8)                   :: start_file, end_file
 
-    allocate(csn(3,2))
-    call MPI_RECV(csn, 3*2, MPI_DOUBLE_PRECISION, 0, MPI_ANY_TAG, MPI_COMM_WORLD, status, IERROR)
+    nSEDgroups = get_nSEDgroups(repository, snapnum)
+    allocate(csn(nSEDgroups,sum(n_ions)))
+    call MPI_RECV(csn, nSEDgroups*sum(n_ions), MPI_DOUBLE_PRECISION, 0, MPI_ANY_TAG, MPI_COMM_WORLD, status, IERROR)
 
     do while (status(MPI_TAG) .ne. EXI_TAG)
 
