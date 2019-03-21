@@ -6,6 +6,7 @@ module module_cell
   use module_parallel_mpi_mine
   use module_krome
   use module_ramses
+  use module_random
 
 
   implicit none
@@ -55,7 +56,8 @@ contains
     real(kind=8),allocatable,dimension(:,:)       :: cells_rt
     real(kind=8),dimension(ncell)                 :: nH, Tgas, mets, nHI
     real(kind=8),dimension(3,ncell)               :: fractions
-    integer(kind=4)                               :: nSEDgroups, i, j, k
+    integer(kind=4)                               :: nSEDgroups, i, j, k, seed
+    real(kind=8)   :: ran
 
     nSEDgroups = get_nSEDgroups(repository,snapnum)
     allocate(cells_rt(nSEDgroups,ncell))
@@ -80,12 +82,15 @@ contains
        !!!!!!!!! To remove after succesful restarts of simulations with Ramses, to add a "low-energy" photon bin'
        do j=1,n_elements
           if(elements(j) /= 8) then
-             cellgrid(i)%rates(sum(n_ions(1:j-1))+1) = 1d-9
+             seed = 1928
+             ran = ran3(seed)
+             cellgrid(i)%rates(sum(n_ions(1:j-1))+1) = maxval(cellgrid(i)%rates(sum(n_ions(1:j-1))+2:sum(n_ions(1:j-1))+n_ions(j)))*(9+ran*2)
           end if
        end do
-       !!!!!!!!!
+!!!!!!!!!
        cellgrid(i)%den_ions(:) = 0d0
     end do
+!    print*, 'test rates : ', cellgrid(1)%rates(:)
 
     deallocate(cells_rt)
 
@@ -133,6 +138,8 @@ contains
              !Rare cases of bugs :
              if(maxval(densities(indices(j,1:n_ions(j)))) > 1.0001*n_ion_save(j)) then
                 print*, 'bug'
+                print*, cellgrid(i)%T, cellgrid(i)%nHI, cellgrid(i)%nHII, cellgrid(i)%rates(:), cellgrid(i)%Z
+                print*, rank, i
                 cellgrid(i)%den_ions(l+1:l+n_ions(j)) = 1d-18
                 cellgrid(i)%den_ions(l+ion_state(j)) = max(n_ion_save(j),1d-18)
              !No bug
