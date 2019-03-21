@@ -6,7 +6,7 @@ FFLAGS += $(OPTIONS)
 
 
 
-VPATH = :/Users/mauerhof/Documents/rascas/f90/:./
+VPATH = :/home/cral/mauerhofer/rascas/f90/:./
 
 OBJS = module_constants.o module_random.o module_utils.o
 
