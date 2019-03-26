@@ -141,7 +141,7 @@ contains
                 print*, 'bug'
                 print*, 'temperature, nHI, nHII, photorates, metallicity'
                 print*, cellgrid(i)%T, cellgrid(i)%nHI, cellgrid(i)%nHII, cellgrid(i)%rates(:), cellgrid(i)%Z
-                print*, rank, i
+                !print*, rank, i
                 cellgrid(i)%den_ions(l+1:l+n_ions(j)) = 1d-18
                 cellgrid(i)%den_ions(l+ion_state(j)) = max(n_ion_save(j),1d-18)
              !No bug
