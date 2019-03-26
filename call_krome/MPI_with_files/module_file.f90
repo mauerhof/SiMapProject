@@ -420,7 +420,7 @@ contains
     read(12)
 
     !Same for restart
-    write(nomfich,'(a,a,i5.5,a,i5.5,a,i5.5)') trim(repo_restart),'/output_',snap_restart,'/rt_',snapnum,'.out',icpu
+    write(nomfich,'(a,a,i5.5,a,i5.5,a,i5.5)') trim(repo_restart),'/output_',snap_restart,'/rt_',snap_restart,'.out',icpu
     open(unit=13,file=nomfich,status='old',form='unformatted')
     read(13)
     read(13)nvarRT_restart
