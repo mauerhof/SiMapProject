@@ -4,6 +4,7 @@ module module_worker_mine
   use module_cell
   use module_file
   use module_krome
+  use module_spectra
 
   private 
 
@@ -26,7 +27,7 @@ contains
     integer(kind=4)                :: juseless, i, icpu, nSEDgroups
     real(kind=8)                   :: start_file, end_file
 
-    nSEDgroups = get_nSEDgroups(repository, snapnum)
+    nSEDgroups = get_nOptBins()
     allocate(csn(nSEDgroups,sum(n_ions)))
     call MPI_RECV(csn, nSEDgroups*sum(n_ions), MPI_DOUBLE_PRECISION, 0, MPI_ANY_TAG, MPI_COMM_WORLD, status, IERROR)
 

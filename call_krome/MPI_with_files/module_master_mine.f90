@@ -46,7 +46,7 @@ contains
     if (verbose) print*,'[master] Number of cpu used in the simulation : ', nfiles
 
     !Compute the csn in the box
-    nSEDgroups = get_nSEDgroups(repository, snapnum)
+    nSEDgroups = get_nOptBins()
     call init_csn(repository, snapnum)
     do icpu=1,nworker
        call MPI_SEND(csn, nSEDgroups*sum(n_ions), MPI_DOUBLE_PRECISION, icpu, tag, MPI_COMM_WORLD, code)

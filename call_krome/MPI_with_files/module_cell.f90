@@ -47,6 +47,7 @@ contains
 
     use module_ramses
     use module_krome
+    use module_spectra
 
     implicit none
 
@@ -59,7 +60,7 @@ contains
     integer(kind=4)                               :: nSEDgroups, i, j, k, seed
     real(kind=8)   :: ran
 
-    nSEDgroups = get_nSEDgroups(repository,snapnum)
+    nSEDgroups = get_nOptBins()
     allocate(cells_rt(nSEDgroups,ncell))
 
     call ramses_get_nh_cgs(repository,snapnum,ncell,nvar,ramses_var,nH)
