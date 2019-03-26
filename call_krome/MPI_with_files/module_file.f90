@@ -55,12 +55,12 @@ contains
 
 
 
-  subroutine compute_file(repository, snapnum, icpu, output_path)
+  subroutine compute_file(repository, snapnum, repo_restart, snap_restart, icpu, output_path)
 
     implicit none
 
-    character(2000),intent(in)              :: repository, output_path
-    integer(kind=4),intent(in)              :: snapnum, icpu
+    character(2000),intent(in)              :: repository, repo_restart, output_path
+    integer(kind=4),intent(in)              :: snapnum, snap_restart, icpu
     real(kind=8),allocatable                :: ramses_var(:,:)
     real(kind=8),allocatable,dimension(:,:) :: cells_rt, fractions
     real(kind=8),allocatable,dimension(:)   :: nH, Tgas, mets, nHI
@@ -76,8 +76,8 @@ contains
        print*, 'file ', icpu, ' already computed, passing to the next'
     else
        ncpu = get_ncpu(repository,snapnum)
-       !call read_hydro_mine(repository, snapnum, icpu, nvar, nleaf, ramses_var)
-       call read_amr_hydro_mine(repository, snapnum, icpu, ramses_var, nleaf, nvar)
+       call read_hydro_mine(repository, snapnum, repo_restart, snap_restart, icpu, nvar, nleaf, ramses_var)
+       !call read_amr_hydro_mine(repository, snapnum, icpu, ramses_var, nleaf, nvar)
        call init_cells(repository, snapnum, nvar, nleaf, ramses_var)
 
        call compute_cells()
@@ -384,16 +384,16 @@ contains
 
 
 
-  subroutine read_hydro_mine(repository, snapnum, icpu, nvar, nleaf, ramses_var)
+  subroutine read_hydro_mine(repository, snapnum, repo_restart, snap_restart, icpu, nvar, nleaf, ramses_var)
 
     implicit none
 
-    character(2000),intent(in)             :: repository
-    integer(kind=4),intent(in)             :: snapnum, icpu
+    character(2000),intent(in)             :: repository, repo_restart
+    integer(kind=4),intent(in)             :: snapnum, icpu, snap_restart
     real(kind=8),intent(out),allocatable   :: ramses_var(:,:)
     integer(kind=4),intent(out)            :: nvar,nleaf
     character(1000)                        :: nomfich
-    integer(kind=4)                        :: i,nlevelmax,nboundary,ix,iy,iz,ind,ilevel,ibound,ncache,istart,ivar,iskip,igrid,nvarH,nvarRT,ileaf,icell
+    integer(kind=4)                        :: i,nlevelmax,nboundary,ix,iy,iz,ind,ilevel,ibound,ncache,istart,ivar,iskip,igrid,nvarH,nvarRT,nvarRT_restart,ileaf,icell
     real(kind=8),allocatable               :: xc(:,:),xx(:)
     integer(kind=4),allocatable            :: ind_grid(:)
     real(kind=8)                           :: dx
@@ -419,8 +419,18 @@ contains
     read(12)
     read(12)
 
-    allocate(ramses_var(1:ncell,1:nvarH+nvarRT))
-    nvar = nvarH + nvarRT
+    !Same for restart
+    write(nomfich,'(a,a,i5.5,a,i5.5,a,i5.5)') trim(repo_restart),'/output_',snap_restart,'/rt_',snapnum,'.out',icpu
+    open(unit=13,file=nomfich,status='old',form='unformatted')
+    read(13)
+    read(13)nvarRT_restart
+    read(13)
+    read(13)
+    read(13)
+    read(13)
+
+    allocate(ramses_var(1:ncell,1:nvarH+nvarRT+nvarRT_restart))
+    nvar = nvarH + nvarRT + nvarRT_restart
 
     allocate(xc(1:twotondim,1:ndim))
 
@@ -449,6 +459,8 @@ contains
 
           read(12)
           read(12)
+          read(13)
+          read(13)
 
           if(ncache>0)then
              allocate(ind_grid(1:ncache))
@@ -478,6 +490,14 @@ contains
                       ramses_var(ind_grid(i)+iskip,ivar+nvarH) = xx(i)
                    end do
                 end do
+                !restart
+                do ivar=1,nvarRT_restart
+                   read(13) xx
+                   if (ibound > ncpu) cycle  ! dont bother with boundaries
+                   do i = 1, ncache
+                      ramses_var(ind_grid(i)+iskip,ivar+nvarH+nvarRT) = xx(i)
+                   end do
+                end do
              end do
              deallocate(ind_grid,xx)
           end if
@@ -486,6 +506,7 @@ contains
     deallocate(xc)
     close(10)
     close(12)
+    close(13)
 
     allocate(var(nvar,ncell))
     var = 0d0

@@ -17,12 +17,12 @@ module module_worker_mine
   
 contains
 
-  subroutine worker(repository, snapnum, output_path)
+  subroutine worker(repository, snapnum, repo_restart, snap_restart, output_path)
     
     implicit none
     
-    character(2000),intent(in)     :: repository, output_path
-    integer(kind=4),intent(in)     :: snapnum
+    character(2000),intent(in)     :: repository, repo_restart, output_path
+    integer(kind=4),intent(in)     :: snapnum, snap_restart
     integer(kind=4)                :: juseless, i, icpu, nSEDgroups
     real(kind=8)                   :: start_file, end_file
 
@@ -45,7 +45,7 @@ contains
 
        if(verbose) write(*,'(a,i5.5,a,i5.5)') ' [w',rank,'] begins computation of file ', icpu
        call cpu_time(start_file)
-       call compute_file(repository, snapnum, icpu, output_path)
+       call compute_file(repository, snapnum, repo_restart, snap_restart, icpu, output_path)
        call cpu_time(end_file)
 
        if(verbose)then

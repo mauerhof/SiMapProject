@@ -18,7 +18,9 @@ program main
   ! --------------------------------------------------------------------------
   ! --- input / outputs
   character(2000)           :: repository = '.'                 ! Path to the Ramses simulation
+  character(2000)           :: repo_restart = '.'               ! Path to the restart
   integer(kind=4)           :: snapnum = 12                     ! Timestep of the simulation
+  integer(kind=4)           :: snap_restart = 12                ! Timestep of the restart
 
   character(2000)           :: output_path = '.'   ! Path to the output files. The files will be written in /output_path/output_snapnum/,  so make sure that this directory exists
   !Miscellaneous
@@ -64,7 +66,7 @@ program main
      call master(repository, snapnum)
   else
      ! Worker section, will mostly do the Krome calls
-     call worker(repository, snapnum, output_path)
+     call worker(repository, snapnum, repo_restart, snap_restart, output_path)
   end if
 
 
@@ -159,22 +161,24 @@ contains
     if (present(unit)) then 
        write(unit,'(a,a,a)')     '[ion_fractions]'
        write(unit,'(a,a)')       '  repository           = ',trim(repository)
-       write(unit,'(a,i5)')      '  snapnum         = ',snapnum
-       write(unit,'(a,a)')       '  output_path      = ',trim(output_path)
-       write(unit,'(a,L1)')      '  verbose          = ',verbose
+       write(unit,'(a,i5)')      '  snapnum              = ',snapnum
+       write(unit,'(a,a)')       '  repo_restart         = ',trim(repo_restart)
+       write(unit,'(a,i5)')      '  snap_restart         = ',snap_restart
+       write(unit,'(a,a)')       '  output_path          = ',trim(output_path)
+       write(unit,'(a,L1)')      '  verbose              = ',verbose
        call print_ramses_params(unit)
        call print_spectra_params(unit)
        call print_master_params(unit)
        call print_worker_params(unit)
     else
        write(*,'(a)')             '--------------------------------------------------------------------------------'
-       write(*,'(a)')             ' '
        write(*,'(a,a,a)')     '[ion_fractions]'
        write(*,'(a,a)')       '  repository           = ',trim(repository)
-       write(*,'(a,i5)')      '  snapnum         = ',snapnum
-       write(*,'(a,a)')       '  output_path      = ',trim(output_path)
-       write(*,'(a,L1)')      '  verbose          = ',verbose
-       write(*,'(a)')             ' '
+       write(*,'(a,i5)')      '  snapnum              = ',snapnum
+       write(*,'(a,a)')       '  repo_restart         = ',trim(repo_restart)
+       write(*,'(a,i5)')      '  snap_restart         = ',snap_restart
+       write(*,'(a,a)')       '  output_path          = ',trim(output_path)
+       write(*,'(a,L1)')      '  verbose              = ',verbose
        write(*,'(a)')             '--------------------------------------------------------------------------------'
        call print_ramses_params
        call print_spectra_params
