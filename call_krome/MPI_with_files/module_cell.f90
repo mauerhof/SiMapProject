@@ -174,7 +174,7 @@ contains
     l=0
     do j=1,n_elements
        do k=1,n_ions(j)
-          write(nomfich,'(a,a,i5.5,a,a,a,a,i5.5,a,i5.5)') trim(output_path),'/output_',snapnum,'/',trim(element_names(elements(j))),trim(roman_num(k)),'_',snapnum,'.out',icpu
+          write(nomfich,'(a,a,a,a,a,i5.5,a,i5.5)') trim(output_path),'/',trim(element_names(elements(j))),trim(roman_num(k)),'_',snapnum,'.out',icpu
           open(unit=10, file=nomfich, form='unformatted', action='write')
           write(10) ncell
           ! write(10) (cellgrid(i)%den_ions(k+l), i=1,ncell)
