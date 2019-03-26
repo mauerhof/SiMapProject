@@ -81,13 +81,13 @@ contains
           cellgrid(i)%rates(j) = sum(cells_rt(:,i)*csn(:,j))
        end do
        !!!!!!!!! To remove after succesful restarts of simulations with Ramses, to add a "low-energy" photon bin'
-       do j=1,n_elements
-          if(elements(j) /= 8) then
-             seed = 1928
-             ran = ran3(seed)
-             cellgrid(i)%rates(sum(n_ions(1:j-1))+1) = maxval(cellgrid(i)%rates(sum(n_ions(1:j-1))+2:sum(n_ions(1:j-1))+n_ions(j)))*(9+ran*2)
-          end if
-       end do
+       ! do j=1,n_elements
+       !    if(elements(j) /= 8) then
+       !       seed = 1928
+       !       ran = ran3(seed)
+       !       cellgrid(i)%rates(sum(n_ions(1:j-1))+1) = maxval(cellgrid(i)%rates(sum(n_ions(1:j-1))+2:sum(n_ions(1:j-1))+n_ions(j)))*(9+ran*2)
+       !    end if
+       ! end do
 !!!!!!!!!
        cellgrid(i)%den_ions(:) = 0d0
     end do
