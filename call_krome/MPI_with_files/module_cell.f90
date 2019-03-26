@@ -139,6 +139,7 @@ contains
              !Rare cases of bugs :
              if(maxval(densities(indices(j,1:n_ions(j)))) > 1.0001*n_ion_save(j)) then
                 print*, 'bug'
+                print*, 'temperature, nHI, nHII, photorates, metallicity'
                 print*, cellgrid(i)%T, cellgrid(i)%nHI, cellgrid(i)%nHII, cellgrid(i)%rates(:), cellgrid(i)%Z
                 print*, rank, i
                 cellgrid(i)%den_ions(l+1:l+n_ions(j)) = 1d-18
