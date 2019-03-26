@@ -125,8 +125,12 @@ contains
           select case (trim(name))
           case ('repository')
              write(repository,'(a)') trim(value)
+          case ('repo_restart')
+             write(repo_restart,'(a)') trim(value)
           case('snapnum')
              read(value,*) snapnum
+          case('snap_restart')
+             read(value,*) snap_restart
           case ('output_path')
              write(output_path,'(a)') trim(value)
           case('verbose')
