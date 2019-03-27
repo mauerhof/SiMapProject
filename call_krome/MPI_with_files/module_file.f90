@@ -69,7 +69,7 @@ contains
     logical                                 :: exist
 
 
-    write(nomfich,'(a,a,i5.5,a,a,a,a,i5.5,a,i5.5)') trim(output_path),'/output_',snapnum,'/',trim(element_names(elements(n_elements))),trim(roman_num(n_ions(n_elements))),'_',snapnum,'.out',icpu
+    write(nomfich,'(a,a,a,a,a,i5.5,a,i5.5)') trim(output_path),'/',trim(element_names(elements(n_elements))),trim(roman_num(n_ions(n_elements))),'_',snapnum,'.out',icpu
     inquire(file=nomfich, exist=exist)
 
     if(exist) then
