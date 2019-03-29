@@ -25,6 +25,7 @@ program main
   character(2000)           :: output_path = '.'   ! Path to the output files. The files will be written in /output_path/output_snapnum/,  so make sure that this directory exists
   !Miscellaneous
   logical                   :: verbose = .true.
+  character(2000)           :: csn_file = 'csn.dat'
   ! --------------------------------------------------------------------------
 
 
@@ -63,7 +64,7 @@ program main
   ! Master - Worker separation
   if (rank == 0) then
      ! Master section, will dispatch the jobs.
-     call master(repository, snapnum)
+     call master(repository, snapnum, csn_file)
   else
      ! Worker section, will mostly do the Krome calls
      call worker(repository, snapnum, repo_restart, snap_restart, output_path)
@@ -133,6 +134,8 @@ contains
              read(value,*) snap_restart
           case ('output_path')
              write(output_path,'(a)') trim(value)
+          case ('csn_file')
+             write(csn_file,'(a)') trim(value)
           case('verbose')
              read(value,*) verbose
 

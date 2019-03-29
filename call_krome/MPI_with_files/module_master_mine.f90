@@ -25,12 +25,12 @@ module module_master_mine
 
 contains
 
-  subroutine master(repository, snapnum)
+  subroutine master(repository, snapnum, csn_file)
 
     implicit none
 
     real(kind=8)                            :: start_init, end_init
-    character(2000),intent(in)              :: repository
+    character(2000),intent(in)              :: repository, csn_file
     integer(kind=4),intent(in)              :: snapnum
     integer(kind=4)                         :: nfiles, nfilestodo, nfilesdone, i, j, k, icpu, idcpu, ncpuended, ntest, nSEDgroups
     real(kind=8)                            :: percentDone, percentBefore
@@ -47,7 +47,7 @@ contains
 
     !Compute the csn in the box
     nSEDgroups = get_nOptBins()
-    call init_csn(repository, snapnum)
+    call init_csn(repository, snapnum, csn_file, nSEDgroups, sum(n_Ions))
     do icpu=1,nworker
        call MPI_SEND(csn, nSEDgroups*sum(n_ions), MPI_DOUBLE_PRECISION, icpu, tag, MPI_COMM_WORLD, code)
     end do

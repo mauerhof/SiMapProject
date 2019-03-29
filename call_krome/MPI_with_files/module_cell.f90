@@ -29,16 +29,56 @@ module module_cell
 
 contains
 
-  subroutine init_csn(repository, snapnum)
+  subroutine init_csn(repository, snapnum, csn_file, nGroups, number_ions)
 
     implicit none
 
-    character(2000),intent(in)              :: repository
-    integer(kind=4),intent(in)              :: snapnum
+    character(2000),intent(in)              :: repository, csn_file
+    integer(kind=4),intent(in)              :: snapnum, nGroups, number_ions
+    integer(kind=4)                         :: i,j, test_nGroups, test_number_ions
+    logical                                 :: exist
+    character(2000)                         :: csn_new_file
 
-    !allocate(csn(3,2))
-    !csn = 1d-18
-    call compute_csn_in_box(repository, snapnum, n_elements, elements, n_ions, csn)
+    inquire(file=csn_file, exist=exist)
+    if(exist) then
+       open(unit=10, file=csn_file, form='unformatted', action='read')
+       read(10) test_nGroups
+       if(test_nGroups /= nGroups) then
+          print*, 'Problem, the number of photon groups in the csn_file is not correct. Check your parameters or your csn_file'
+          call stop_mpi
+       end if
+       read(10) test_number_ions
+       if(test_number_ions /= number_ions) then
+          print*, 'Problem, the number of ions in the csn_file is not correct. Check your parameters or your csn_file'
+          call stop_mpi
+       end if
+
+       allocate(csn(nGroups, number_ions))
+       
+       do i=1,number_ions
+          read(10) (csn(j,i), j=1,nGroups)
+       end do
+       close(10)
+
+       print*, 'csn (nSEDgroups * nIons)'
+       do j=1,nGroups
+          print*, csn(j,:)
+       end do
+
+    else
+       print*, 'Beginning computation of csn'
+       call compute_csn_in_box(repository, snapnum, n_elements, elements, n_ions, csn)
+
+       write(csn_new_file, '(a)') 'csn_save'
+       open(unit=10, file=csn_new_file, form='unformatted', action='write')
+       write(10) nGroups
+       write(10) number_ions
+       do i=1,number_ions
+          write(10) (csn(j,i), j=1,nGroups)
+       end do
+       close(10)
+       
+    end if
 
   end subroutine init_csn
 
@@ -80,18 +120,8 @@ contains
        do j=1,nPhotoRea
           cellgrid(i)%rates(j) = sum(cells_rt(:,i)*csn(:,j))
        end do
-       !!!!!!!!! To remove after succesful restarts of simulations with Ramses, to add a "low-energy" photon bin'
-       ! do j=1,n_elements
-       !    if(elements(j) /= 8) then
-       !       seed = 1928
-       !       ran = ran3(seed)
-       !       cellgrid(i)%rates(sum(n_ions(1:j-1))+1) = maxval(cellgrid(i)%rates(sum(n_ions(1:j-1))+2:sum(n_ions(1:j-1))+n_ions(j)))*(9+ran*2)
-       !    end if
-       ! end do
-!!!!!!!!!
        cellgrid(i)%den_ions(:) = 0d0
     end do
-!    print*, 'test rates : ', cellgrid(1)%rates(:)
 
     deallocate(cells_rt)
 
@@ -125,7 +155,7 @@ contains
 
 
           do j=1,n_elements
-             n_ion_save(j) = cellgrid(i)%Z/0.0134*abundances(elements(j))*(densities(krome_idx_H) + densities(krome_idx_Hj))
+             n_ion_save(j) = cellgrid(i)%Z/0.0134*abundances(j)*(densities(krome_idx_H) + densities(krome_idx_Hj))
              non_zero_index(j) = get_non_zero_index(j,cellgrid(i)%T,ion_state(j))
              densities(non_zero_index(j)) = max(n_ion_save(j), 1d-18)
              densities(krome_idx_E) = densities(krome_idx_E) + (ion_state(j)-1)*densities(non_zero_index(j))
@@ -141,7 +171,6 @@ contains
                 print*, 'bug'
                 print*, 'temperature, nHI, nHII, photorates, metallicity'
                 print*, cellgrid(i)%T, cellgrid(i)%nHI, cellgrid(i)%nHII, cellgrid(i)%rates(:), cellgrid(i)%Z
-                !print*, rank, i
                 cellgrid(i)%den_ions(l+1:l+n_ions(j)) = 1d-18
                 cellgrid(i)%den_ions(l+ion_state(j)) = max(n_ion_save(j),1d-18)
              !No bug
@@ -178,8 +207,7 @@ contains
           write(nomfich,'(a,a,a,a,a,i5.5,a,i5.5)') trim(output_path),'/',trim(element_names(elements(j))),trim(roman_num(k)),'_',snapnum,'.out',icpu
           open(unit=10, file=nomfich, form='unformatted', action='write')
           write(10) ncell
-          ! write(10) (cellgrid(i)%den_ions(k+l), i=1,ncell)
-          write(10) (cellgrid(i)%nHI+cellgrid(i)%nHII, i=1,ncell)
+          write(10) (cellgrid(i)%den_ions(k+l), i=1,ncell)
           close(10)
        end do
        l = l + n_ions(j)
