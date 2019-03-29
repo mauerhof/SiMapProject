@@ -125,7 +125,7 @@ contains
 
 
           do j=1,n_elements
-             n_ion_save(j) = cellgrid(i)%Z/0.0134*abundances(element(j))*(densities(krome_idx_H) + densities(krome_idx_Hj))
+             n_ion_save(j) = cellgrid(i)%Z/0.0134*abundances(elements(j))*(densities(krome_idx_H) + densities(krome_idx_Hj))
              non_zero_index(j) = get_non_zero_index(j,cellgrid(i)%T,ion_state(j))
              densities(non_zero_index(j)) = max(n_ion_save(j), 1d-18)
              densities(krome_idx_E) = densities(krome_idx_E) + (ion_state(j)-1)*densities(non_zero_index(j))
