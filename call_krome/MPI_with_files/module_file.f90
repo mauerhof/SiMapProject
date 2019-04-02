@@ -26,7 +26,7 @@ module module_file
   integer,allocatable              :: next(:)      ! next grid in list
   real(KIND=8),dimension(1:3)      :: xbound=(/0d0,0d0,0d0/) 
   integer,parameter                :: twotondim = 8, ndim = 3, twondim = 6
-  logical                          :: first=.true., first2=.true.
+  logical                          :: first=.true., first2=.true., first3=.true.
 
   public :: init_files, compute_file
 
@@ -83,7 +83,7 @@ contains
        inquire(file=nomfich2, exist=exist2)
        
        if(exist2) then
-          if(first2) print*, 'Using restart output'
+          if(first2 .and. rank==1) print*, 'Using restart output'
           first2=.false.
           call read_hydro_mine_restart(repository, snapnum, repo_restart, snap_restart, icpu, nvar, nleaf, ramses_var)
        else
@@ -140,6 +140,8 @@ contains
 
     allocate(ramses_var(1:ncell,1:nvarH+nvarRT))
     nvar = nvarH + nvarRT
+    if(rank==1 .and. first3) print*, 'nvar : ', nvar
+    first3=.false.
 
     allocate(xc(1:twotondim,1:ndim))
 
@@ -282,7 +284,8 @@ contains
 
     allocate(ramses_var(1:ncell,1:nvarH+nvarRT+nvarRT_restart))
     nvar = nvarH + nvarRT + nvarRT_restart
-    print*, 'nvar : ', nvar
+    if(rank==1 .and. first3) print*, 'nvar : ', nvar
+    first3=.false.
 
     allocate(xc(1:twotondim,1:ndim))
 
