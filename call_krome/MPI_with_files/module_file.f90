@@ -26,7 +26,7 @@ module module_file
   integer,allocatable              :: next(:)      ! next grid in list
   real(KIND=8),dimension(1:3)      :: xbound=(/0d0,0d0,0d0/) 
   integer,parameter                :: twotondim = 8, ndim = 3, twondim = 6
-  logical                          :: first=.true.
+  logical                          :: first=.true., first2=.true.
 
   public :: init_files, compute_file
 
@@ -67,7 +67,7 @@ contains
     real(kind=8),allocatable,dimension(:)   :: nH, Tgas, mets, nHI
     integer(kind=4)                         :: nSEDgroups, nvar, nleaf
     character(1000)                         :: nomfich, nomfich2
-    logical                                 :: exist, exist2, first
+    logical                                 :: exist, exist2
 
 
     write(nomfich,'(a,a,a,a,a,i5.5,a,i5.5)') trim(output_path),'/',trim(element_names(elements(n_elements))),trim(roman_num(n_ions(n_elements))),'_',snapnum,'.out',icpu
@@ -82,7 +82,9 @@ contains
        write(nomfich2,'(a,a,i5.5,a,i5.5,a,i5.5)') trim(repo_restart),'/output_',snap_restart,'/rt_',snap_restart,'.out',icpu
        inquire(file=nomfich2, exist=exist2)
        
-       if(exist) then
+       if(exist2) then
+          if(first2) print*, 'Using restart output'
+          first2=.false.
           call read_hydro_mine_restart(repository, snapnum, repo_restart, snap_restart, icpu, nvar, nleaf, ramses_var)
        else
           if(first) print*, 'No restart file found, so continuing without restart file'
@@ -280,6 +282,7 @@ contains
 
     allocate(ramses_var(1:ncell,1:nvarH+nvarRT+nvarRT_restart))
     nvar = nvarH + nvarRT + nvarRT_restart
+    print*, 'nvar : ', nvar
 
     allocate(xc(1:twotondim,1:ndim))
 
@@ -332,21 +335,23 @@ contains
                    end do
                 end do
 
-                do ivar=1,nvarRT
-                   read(12) xx
-                   if (ibound > ncpu) cycle  ! dont bother with boundaries
-                   do i = 1, ncache
-                      ramses_var(ind_grid(i)+iskip,ivar+nvarH) = xx(i)
-                   end do
-                end do
                 !restart
                 do ivar=1,nvarRT_restart
                    read(13) xx
                    if (ibound > ncpu) cycle  ! dont bother with boundaries
                    do i = 1, ncache
-                      ramses_var(ind_grid(i)+iskip,ivar+nvarH+nvarRT) = xx(i)
+                      ramses_var(ind_grid(i)+iskip,ivar+nvarH) = xx(i)
                    end do
                 end do
+
+                do ivar=1,nvarRT
+                   read(12) xx
+                   if (ibound > ncpu) cycle  ! dont bother with boundaries
+                   do i = 1, ncache
+                      ramses_var(ind_grid(i)+iskip,ivar+nvarH+nvarRT_restart) = xx(i)
+                   end do
+                end do
+                
              end do
              deallocate(ind_grid,xx)
           end if
