@@ -128,10 +128,11 @@ contains
   end subroutine init_cells
 
 
-  subroutine compute_cells()
+  subroutine compute_cells(icpu)
 
     implicit none
 
+    integer(kind=4),intent(in)         :: icpu
     integer(kind=4)                    :: i, j, k, l, ion_state(n_elements), ncell, non_zero_index(n_elements)
     real(kind=8)                       :: densities(nmols), n_ion_save(n_elements)
 
@@ -162,13 +163,13 @@ contains
           end do
           densities(krome_idx_E) = max(densities(krome_idx_E),1d-18)
 
-          call krome_equilibrium(densities, cellgrid(i)%T)
+          call krome_equilibrium(densities, cellgrid(i)%T, icpu)
 
           l=0
           do j=1,n_elements
              !Rare cases of bugs :
              if(maxval(densities(indices(j,1:n_ions(j)))) > 1.0001*n_ion_save(j)) then
-                print*, 'bug'
+                print*, 'bug in file ', icpu
                 print*, 'temperature, nHI, nHII, photorates, metallicity'
                 print*, cellgrid(i)%T, cellgrid(i)%nHI, cellgrid(i)%nHII, cellgrid(i)%rates(:), cellgrid(i)%Z
                 cellgrid(i)%den_ions(l+1:l+n_ions(j)) = 1d-18

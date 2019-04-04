@@ -94,7 +94,7 @@ contains
        
        call init_cells(repository, snapnum, nvar, nleaf, ramses_var)
 
-       call compute_cells()
+       call compute_cells(icpu)
 
        call write_ion_files(snapnum, icpu, output_path)
        
