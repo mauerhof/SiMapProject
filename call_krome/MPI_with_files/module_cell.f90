@@ -83,7 +83,7 @@ contains
   end subroutine init_csn
 
 
-  subroutine init_cells(repository, snapnum, nvar, ncell, ramses_var)
+  subroutine init_cells(repository, snapnum, nvar, ncell, ramses_var, restart)
 
     use module_ramses
     use module_krome
@@ -94,6 +94,7 @@ contains
     character(2000),intent(in)                    :: repository
     integer(kind=4),intent(in)                    :: snapnum, nvar, ncell
     real(kind=8),intent(in),dimension(ncell,nvar) :: ramses_var
+    logical,intent(in)                            :: restart
     real(kind=8),allocatable,dimension(:,:)       :: cells_rt
     real(kind=8),dimension(ncell)                 :: nH, Tgas, mets, nHI
     real(kind=8),dimension(3,ncell)               :: fractions
@@ -120,6 +121,7 @@ contains
        do j=1,nPhotoRea
           cellgrid(i)%rates(j) = sum(cells_rt(:,i)*csn(:,j))
        end do
+       if((.not. restart) .and. (elements(1)/=8)) cellgrid(i)%rates(1) = 1d-10
        cellgrid(i)%den_ions(:) = 0d0
     end do
 

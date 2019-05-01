@@ -67,7 +67,7 @@ contains
     real(kind=8),allocatable,dimension(:)   :: nH, Tgas, mets, nHI
     integer(kind=4)                         :: nSEDgroups, nvar, nleaf
     character(1000)                         :: nomfich, nomfich2
-    logical                                 :: exist, exist2
+    logical                                 :: exist, restart
 
 
     write(nomfich,'(a,a,a,a,a,i5.5,a,i5.5)') trim(output_path),'/',trim(element_names(elements(n_elements))),trim(roman_num(n_ions(n_elements))),'_',snapnum,'.out',icpu
@@ -80,9 +80,9 @@ contains
        ncpu = get_ncpu(repository,snapnum)
 
        write(nomfich2,'(a,a,i5.5,a,i5.5,a,i5.5)') trim(repo_restart),'/output_',snap_restart,'/rt_',snap_restart,'.out',icpu
-       inquire(file=nomfich2, exist=exist2)
+       inquire(file=nomfich2, exist=restart)
        
-       if(exist2) then
+       if(restart) then
           if(first2 .and. rank==1) print*, 'Using restart output'
           first2=.false.
           call read_hydro_mine_restart(repository, snapnum, repo_restart, snap_restart, icpu, nvar, nleaf, ramses_var)
@@ -92,7 +92,7 @@ contains
           call read_hydro_mine(repository, snapnum, icpu, nvar, nleaf, ramses_var)
        end if
        
-       call init_cells(repository, snapnum, nvar, nleaf, ramses_var)
+       call init_cells(repository, snapnum, nvar, nleaf, ramses_var, restart)
 
        call compute_cells(icpu)
 
