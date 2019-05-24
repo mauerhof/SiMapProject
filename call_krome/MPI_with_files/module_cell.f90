@@ -37,7 +37,6 @@ contains
     integer(kind=4),intent(in)              :: snapnum, nGroups, number_ions
     integer(kind=4)                         :: i,j, test_nGroups, test_number_ions
     logical                                 :: exist
-    character(2000)                         :: csn_new_file
 
     inquire(file=csn_file, exist=exist)
     if(exist) then
@@ -69,8 +68,7 @@ contains
        print*, 'Beginning computation of csn'
        call compute_csn_in_box(repository, snapnum, n_elements, elements, n_ions, csn)
 
-       write(csn_new_file, '(a)') 'csn_save'
-       open(unit=10, file=csn_new_file, form='unformatted', action='write')
+       open(unit=10, file=csn_file, form='unformatted', action='write')
        write(10) nGroups
        write(10) number_ions
        do i=1,number_ions
