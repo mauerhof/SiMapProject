@@ -1,0 +1,6 @@
+#!/bin/bash
+#SBATCH -p r4 --mail-user=valentin.mauerhofer@unige.ch --mail-type=ALL
+#SBATCH --nodes=1
+#SBATCH --ntasks=16
+
+make -j 16 name='input'

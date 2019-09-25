@@ -1,0 +1,33 @@
+print off 
+abundances GASS10 
+hden -3.6996479170018093
+element abundance helium -1.103 
+metals -0.5277763832087065 log 
+element limit off -5.527776383208707 
+table SED "sedCloudy_grp0.sed" 
+intensity linear total 3.9376782950737583e+37 
+table SED "sedCloudy_grp1.sed" 
+intensity linear total 1.267498545414316e+27 
+table SED "sedCloudy_grp2.sed" 
+intensity linear total 1.0679776278502364e+27 
+table SED "sedCloudy_grp3.sed" 
+intensity linear total 1.1990363974866414e+24 
+CMB z=3 
+const temp 4.162781499203811
+sphere 
+iterate to convergence 
+stop zone 1 
+radius 30 
+no molecules 
+no H2 molecule 
+no induced processes 
+save last ionization means file = "ion0000001.avr" 
+save lines, emissivity, emergent, last, "lines0000001.dat" 
+H 1 6563A 
+end of lines 
+save species populations last iteration "SiII_pop_0000001.dat" 
+"Si+[1:2]" 
+"C+[1:2]" 
+end 
+stop temperature off 
+set dr 0 

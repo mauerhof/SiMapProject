@@ -1,0 +1,12 @@
+                                                          Cloudy 17.00
+                                                         www.nublado.org
+
+                       **************************************17Jun01**************************************
+                       *                                                                                 *
+                       * print off                                                                       *
+WARNING: read "H 1 " as spectrum
+Assuming required spectrum is "H  1"
+Warning, 'save species populations' has changed to 'save species densities'.
+'save species populations' is deprecated, please update your input.
+WARNING: no exact matching lines found for "H  1" 6563.00A
+Taking best match as "H  1      6562.81A"
