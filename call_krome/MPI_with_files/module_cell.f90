@@ -119,7 +119,13 @@ contains
        do j=1,nPhotoRea
           cellgrid(i)%rates(j) = sum(cells_rt(:,i)*csn(:,j))
        end do
-       if((.not. restart) .and. (elements(1)/=8)) cellgrid(i)%rates(1) = 1d-10
+       if((.not. restart) .and. (elements(1)/=8)) cellgrid(i)%rates(1) = 1.65d-9
+       
+       !HACKKKK, HARD CODE
+       !Put UVB instead of stellar radiation
+       ! cellgrid(i)%rates(1) = 1.578d-9
+       ! cellgrid(i)%rates(2) = 1.212d-13
+       
        cellgrid(i)%den_ions(:) = 0d0
     end do
 

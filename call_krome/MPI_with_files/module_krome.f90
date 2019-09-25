@@ -186,6 +186,17 @@ contains
           get_ion_state = 5
        end if
 
+    case(13)
+       if(T<3.8050d4) then
+          get_ion_state = 2
+       else if (T<4.06d4) then
+          get_ion_state = 3
+       else if(T<2.22d5) then
+          get_ion_state = 4
+       else
+          get_ion_state = 5
+       end if
+
     case(14)
        if(T<2d4) then
           get_ion_state = 2
@@ -196,7 +207,7 @@ contains
        end if
 
     case default
-       print*, 'Other elements than Carbon(6), Oxygen(8), Magnesium(12) and Silicone(14) have not been implemented yet'
+       print*, 'Other elements than Carbon(6), Oxygen(8), Magnesium(12), Aluminium(13) and Silicone(14) have not been implemented yet'
        call stop_mpi
 
     end select
