@@ -1,0 +1,62 @@
+  
+ Krome initialized
+  
+ --> Working with Nworker =           4
+ --> Starting master/workers pattern
+  
+ [master] reading cells
+ number of stars :     11408322
+ Initialization of SED_table : done !
+ csn (nSEDgroups * nIons)
+   8.1773714150324638E-018   0.0000000000000000     
+   1.0289920718481549E-017   2.4600875587902080E-018
+   4.8947650071969703E-018   5.2701232353704258E-018
+  
+ ...reading RAMSES cells...
+  
+ -- read_leaf_cells_omp --> nleaftot, nvar, ncpu =   651797672          21        5600
+  
+ --> Nleaves read =   651797672
+  
+ [master] N cells =   651797672
+ [master] time to initialize cells in master =     2927.532 seconds. (omp)
+ [master] send a first bundle of cells to each worker
+ [w00002] time to compute a bundle of cells =    33.288000 seconds.
+ [w00004] time to compute a bundle of cells =    35.496000 seconds.
+ [w00003] time to compute a bundle of cells =    38.224000 seconds.
+ [w00001] time to compute a bundle of cells =    39.564000 seconds.
+ [w00002] time to compute a bundle of cells =    40.096000 seconds.
+ [w00004] time to compute a bundle of cells =    61.420000 seconds.
+ [w00001] time to compute a bundle of cells =    57.264000 seconds.
+ [w00002] time to compute a bundle of cells =    41.216000 seconds.
+ [w00003] time to compute a bundle of cells =    53.996000 seconds.
+ [w00004] time to compute a bundle of cells =    41.216000 seconds.
+ [w00001] time to compute a bundle of cells =    46.616000 seconds.
+ [w00002] time to compute a bundle of cells =    41.920000 seconds.
+ [w00003] time to compute a bundle of cells =    51.452000 seconds.
+ [w00004] time to compute a bundle of cells =    54.496000 seconds.
+ [w00001] time to compute a bundle of cells =    50.020000 seconds.
+ [w00002] time to compute a bundle of cells =    42.948000 seconds.
+ [w00003] time to compute a bundle of cells =    47.200000 seconds.
+ [w00004] time to compute a bundle of cells =    71.216000 seconds.
+ [w00001] time to compute a bundle of cells =    65.908000 seconds.
+ [w00002] time to compute a bundle of cells =    65.092000 seconds.
+ [w00003] time to compute a bundle of cells =    66.296000 seconds.
+ [w00004] time to compute a bundle of cells =    70.116000 seconds.
+ [w00002] time to compute a bundle of cells =    53.984000 seconds.
+ [w00001] time to compute a bundle of cells =    66.448000 seconds.
+ [w00003] time to compute a bundle of cells =    53.036000 seconds.
+ [w00002] time to compute a bundle of cells =    31.608000 seconds.
+ [w00004] time to compute a bundle of cells =    51.040000 seconds.
+ [w00001] time to compute a bundle of cells =    59.244000 seconds.
+ [w00003] time to compute a bundle of cells =    58.548000 seconds.
+ [w00002] time to compute a bundle of cells =    58.608000 seconds.
+ [w00004] time to compute a bundle of cells =    59.528000 seconds.
+ [w00001] time to compute a bundle of cells =    55.900000 seconds.
+ [w00003] time to compute a bundle of cells =    55.136000 seconds.
+ [w00002] time to compute a bundle of cells =    47.912000 seconds.
+ [w00004] time to compute a bundle of cells =    38.908000 seconds.
+ [w00001] time to compute a bundle of cells =    33.692000 seconds.
+--------------------------------------------------------------------------
+mpirun noticed that process rank 1 with PID 0 on node lyocral1 exited on signal 15 (Terminated).
+--------------------------------------------------------------------------
