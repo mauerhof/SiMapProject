@@ -2,7 +2,8 @@
 [ion_fractions]
   repository = /cral4/simulations/P13-20h-1Mpc-MUSIC/Zoom-7-10508/SPHINX_run/
   snapnum = 107
-  output_path = ./test
+  output_path = /cral/mauerhofer/simu_jeremy/ions/output_00107/T/
+#  output_path = ./test/
   csn_file = csn_Al_zoom_107
   verbose = T
 !--------------------------------------------------------------------------------
@@ -49,6 +50,7 @@
   n_elements = 1
   krome_parameter_file = params_krome.dat
   verbose = T
+  just_T_ne = T
 !--------------------------------------------------------------------------------
 
 

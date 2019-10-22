@@ -25,7 +25,7 @@ module module_cell
   real(kind=8),allocatable,dimension(:,:),public :: csn
   type(cell),allocatable                         :: cellgrid(:)
 
-  public :: init_cells, compute_cells, write_ion_files
+  public :: init_cells, compute_cells, write_ion_files, write_ion_T_ne_files, write_T_ne_files
 
 contains
 
@@ -96,7 +96,7 @@ contains
     real(kind=8),allocatable,dimension(:,:)       :: cells_rt
     real(kind=8),dimension(ncell)                 :: nH, Tgas, mets, nHI
     real(kind=8),dimension(3,ncell)               :: fractions
-    integer(kind=4)                               :: nSEDgroups, i, j, k, seed
+    integer(kind=4)                               :: nSEDgroups, i, j, k, seed, element_rea, ion_rea
     real(kind=8)   :: ran
 
     nSEDgroups = get_nOptBins()
@@ -119,7 +119,17 @@ contains
        do j=1,nPhotoRea
           cellgrid(i)%rates(j) = sum(cells_rt(:,i)*csn(:,j))
        end do
-       if((.not. restart) .and. (elements(1)/=8)) cellgrid(i)%rates(1) = 1.65d-9
+
+       if(.not. restart) then
+          do j=1,nPhotoRea
+             call nphotorea_to_ion(j, element_rea, ion_rea)
+             if(photo_background_107(element_rea) > 0d0 .and. ion_rea == 1) cellgrid(i)%rates(j) = photo_background_107(element_rea)
+          end do
+       end if
+
+       !if(i==1) print*,cellgrid(i)%rates(:)
+       
+       !if((.not. restart) .and. (elements(1)/=8)) cellgrid(i)%rates(1) = 1.65d-9
        
        !HACKKKK, HARD CODE
        !Put UVB instead of stellar radiation
@@ -174,12 +184,12 @@ contains
           l=0
           do j=1,n_elements
              !Rare cases of bugs :
-             if(maxval(densities(indices(j,1:n_ions(j)))) > 1.0001*n_ion_save(j)) then
+             if(maxval(densities(indices(j,1:n_ions(j)))) > 1.01*n_ion_save(j)) then
                 print*, 'bug in file ', icpu
                 print*, 'temperature, nHI, nHII, photorates, metallicity'
                 print*, cellgrid(i)%T, cellgrid(i)%nHI, cellgrid(i)%nHII, cellgrid(i)%rates(:), cellgrid(i)%Z
                 cellgrid(i)%den_ions(l+1:l+n_ions(j)) = 1d-18
-                cellgrid(i)%den_ions(l+ion_state(j)) = max(n_ion_save(j),1d-18)
+                if(ion_state(j) <= n_ions(j)) cellgrid(i)%den_ions(l+ion_state(j)) = max(n_ion_save(j),1d-18)
              !No bug
              else
                 do k=1,n_ions(j)
@@ -196,7 +206,7 @@ contains
     end do
   end subroutine compute_cells
 
-
+  
   subroutine write_ion_files(snapnum, icpu, output_path)
     
     implicit none
@@ -223,6 +233,64 @@ contains
     deallocate(cellgrid)
 
   end subroutine write_ion_files
+  
+
+  subroutine write_ion_T_ne_files(snapnum, icpu, output_path)
+    
+    implicit none
+
+    character(2000),intent(in)              :: output_path
+    integer(kind=4),intent(in)              :: snapnum, icpu
+    character(1000)                         :: nomfich
+    integer(kind=4)                         :: i,j,k,l, ncell
+
+    ncell = size(cellgrid)
+
+    l=0
+    do j=1,n_elements
+       do k=1,n_ions(j)
+          write(nomfich,'(a,a,a,a,a,i5.5,a,i5.5)') trim(output_path),'/',trim(element_names(elements(j))),trim(roman_num(k)),'_',snapnum,'.out',icpu
+          open(unit=10, file=nomfich, form='unformatted', action='write')
+          write(10) ncell
+          write(10) (cellgrid(i)%den_ions(k+l), i=1,ncell)
+          close(10)
+       end do
+       l = l + n_ions(j)
+    end do
+
+    write(nomfich,'(a,a,i5.5,a,i5.5)') trim(output_path),'/T_ne_',snapnum,'.out',icpu
+    open(unit=10, file=nomfich, form='unformatted', action='write')
+    write(10) ncell
+    write(10) (cellgrid(i)%T, i=1,ncell)
+    write(10) (cellgrid(i)%Z / 0.0134 * 1.4 * 2.7d-4 * (cellgrid(i)%nHI + cellgrid(i)%nHII) + cellgrid(i)%nHII + cellgrid(i)%nHeII + 2d0*cellgrid(i)%nHeIII, i=1,ncell)
+    close(10)
+
+    deallocate(cellgrid)
+
+  end subroutine write_ion_T_ne_files
+
+
+  subroutine write_T_ne_files(snapnum, icpu, output_path)
+    
+    implicit none
+
+    character(2000),intent(in)              :: output_path
+    integer(kind=4),intent(in)              :: snapnum, icpu
+    character(1000)                         :: nomfich
+    integer(kind=4)                         :: i,j,k,l, ncell
+
+    ncell = size(cellgrid)
+
+    write(nomfich,'(a,a,i5.5,a,i5.5)') trim(output_path),'/T_ne_',snapnum,'.out',icpu
+    open(unit=10, file=nomfich, form='unformatted', action='write')
+    write(10) ncell
+    write(10) (cellgrid(i)%T, i=1,ncell)
+    write(10) (cellgrid(i)%Z / 0.0134 * 1.4 * 2.7d-4 * (cellgrid(i)%nHI + cellgrid(i)%nHII) + cellgrid(i)%nHII + cellgrid(i)%nHeII + 2d0*cellgrid(i)%nHeIII, i=1,ncell)
+    close(10)
+
+    deallocate(cellgrid)
+
+  end subroutine write_T_ne_files
     
 end module module_cell
 

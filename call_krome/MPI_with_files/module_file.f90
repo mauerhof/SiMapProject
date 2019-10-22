@@ -70,34 +70,48 @@ contains
     logical                                 :: exist, restart
 
 
-    write(nomfich,'(a,a,a,a,a,i5.5,a,i5.5)') trim(output_path),'/',trim(element_names(elements(n_elements))),trim(roman_num(n_ions(n_elements))),'_',snapnum,'.out',icpu
-    inquire(file=nomfich, exist=exist)
-
-    if(exist) then
-       print*, 'file ', icpu, ' already computed, passing to the next'
+    if(just_T_ne) then
+       ncpu = get_ncpu(repository,snapnum)
+       call read_hydro_mine(repository, snapnum, icpu, nvar, nleaf, ramses_var)
+       !print*,'nleaf : ', nleaf
+       call init_cells(repository, snapnum, nvar, nleaf, ramses_var, restart)
+       call write_T_ne_files(snapnum, icpu, output_path)
     else
 
-       ncpu = get_ncpu(repository,snapnum)
+       write(nomfich,'(a,a,a,a,a,i5.5,a,i5.5)') trim(output_path),'/',trim(element_names(elements(n_elements))),trim(roman_num(n_ions(n_elements))),'_',snapnum,'.out',icpu
+       inquire(file=nomfich, exist=exist)
 
-       write(nomfich2,'(a,a,i5.5,a,i5.5,a,i5.5)') trim(repo_restart),'/output_',snap_restart,'/rt_',snap_restart,'.out',icpu
-       inquire(file=nomfich2, exist=restart)
-       
-       if(restart) then
-          if(first2 .and. rank==1) print*, 'Using restart output'
-          first2=.false.
-          call read_hydro_mine_restart(repository, snapnum, repo_restart, snap_restart, icpu, nvar, nleaf, ramses_var)
+       if(exist) then
+          print*, 'file ', icpu, ' already computed, passing to the next'
        else
-          if(first) print*, 'No restart file found, so continuing without restart file'
-          first = .false.
-          call read_hydro_mine(repository, snapnum, icpu, nvar, nleaf, ramses_var)
+
+          ncpu = get_ncpu(repository,snapnum)
+
+          write(nomfich2,'(a,a,i5.5,a,i5.5,a,i5.5)') trim(repo_restart),'/output_',snap_restart,'/rt_',snap_restart,'.out',icpu
+          inquire(file=nomfich2, exist=restart)
+
+          if(restart) then
+             if(first2 .and. rank==1) print*, 'Using restart output'
+             first2=.false.
+             call read_hydro_mine_restart(repository, snapnum, repo_restart, snap_restart, icpu, nvar, nleaf, ramses_var)
+          else
+             if(first .and. rank==1) print*, 'No restart file found, so continuing without restart file'
+             first = .false.
+             call read_hydro_mine(repository, snapnum, icpu, nvar, nleaf, ramses_var)
+          end if
+          !print*,'nleaf : ',nleaf
+
+          call init_cells(repository, snapnum, nvar, nleaf, ramses_var, restart)
+
+          call compute_cells(icpu)
+
+          if(ion_T_ne) then
+             call write_ion_T_ne_files(snapnum, icpu, output_path)
+          else
+             call write_ion_files(snapnum, icpu, output_path)
+          end if
+
        end if
-       
-       call init_cells(repository, snapnum, nvar, nleaf, ramses_var, restart)
-
-       call compute_cells(icpu)
-
-       call write_ion_files(snapnum, icpu, output_path)
-       
     end if
 
   end subroutine compute_file

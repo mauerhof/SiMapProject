@@ -12,18 +12,20 @@ module module_krome
   integer(kind=4),public    :: n_elements
   character(2000)           :: krome_parameter_file
   logical                   :: verbose = .true.
+  logical,public            :: just_T_ne = .false.
+  logical,public            :: ion_T_ne = .false.
   ! --------------------------------------------------------------------------
 
 
   integer(kind=4),allocatable,public          :: elements(:), n_ions(:), indices(:,:)
   real(kind=8),allocatable,public             :: abundances(:)
-  real(kind=8),parameter,dimension(14),public :: solar_abundances = (/ 1d0, 8.51d-02, 1.12d-11, 2.40d-11, 5.01d-10, 2.69d-04, 6.76d-05, 4.90d-04, 3.63d-08, 8.51d-05, 1.74d-06, 3.98d-05, 2.82d-06, 3.24d-05 /)
+  real(kind=8),parameter,dimension(26),public :: solar_abundances = (/ 1d0, 8.51d-02, 1.12d-11, 2.40d-11, 5.01d-10, 2.69d-04, 6.76d-05, 4.90d-04, 3.63d-08, 8.51d-05, 1.74d-06, 3.98d-05, 2.82d-06, 3.24d-05, 2.57d-7, 1.32d-5, 3.16d-7, 2.51d-6, 1.07d-7, 2.19d-6, 1.41d-9, 8.91d-8, 8.51d-9, 4.37d-7, 2.69d-7, 3.16d-5 /)
   integer(kind=4),parameter,public            :: nIons = nmols - 6 - (natoms-3)
-  character(2),parameter,dimension(14),public :: element_names = (/ 'H ', 'He', 'Li', 'Be', 'B ', 'C ', 'N ', 'O ', 'F ', 'Ne', 'Na', 'Mg', 'Al', 'Si' /)
+  character(2),parameter,dimension(26),public :: element_names = (/ 'H ', 'He', 'Li', 'Be', 'B ', 'C ', 'N ', 'O ', 'F ', 'Ne', 'Na', 'Mg', 'Al', 'Si', 'P ', 'S ', 'Cl', 'Ar', 'K ', 'Ca', 'Sc', 'Ti', 'V ', 'Cr', 'Mn', 'Fe' /)
   character(3),parameter,dimension(6),public  :: roman_num     = (/ 'I  ', 'II ', 'III', 'IV ', 'V  ', 'VI ' /)
+  real(kind=8),parameter,dimension(26),public :: photo_background_107 = (/ -1d1, -1d1, -1d1, -1d1, -1d1, 1.138d-10, -1d1, -1d1, -1d1, -1d1, -1d1, 6.502d-11, 3.333d-9, 3.156d-9, -1d1, 5.286d-10, -1d1, -1d1, -1d1, -1d1, -1d1, -1d1, -1d1, -1d1, -1d1, 2.026d-10 /)
 
-
-  public :: read_krome_params, get_non_zero_index
+  public :: read_krome_params, get_non_zero_index, nphotorea_to_ion
 
 contains
 
@@ -57,6 +59,10 @@ contains
           print*, 'Please put at least 1 for n_ions, stopping the program.'
           call stop_mpi
        end if
+       if(n_ions(i) > 4) then
+          print*, 'Please put no more than 4 for n_ions, stopping the program.'
+          call stop_mpi
+       end if
        if(i<n_elements) then
           if(elements(i) == elements(i+1)) then
              print*, 'The same element is present twice,  please change the krome parameters'
@@ -68,14 +74,18 @@ contains
           end if
        end if
        if(abundances(i) < 0d0) then
-          if(elements(i) > 14) then
-             if(rank==0) print*, 'I did not implement the solar abundances for elements heavier than Silicone (14), please but an abundance in the parameter file'
+          if(elements(i) > 26) then
+             if(rank==0) print*, 'I did not implement the solar abundances for elements heavier than Iron (26), please but an abundance in the parameter file'
              call stop_mpi
           else
              abundances(i) = solar_abundances(elements(i))
           end if
        end if
     end do
+    if(sum(n_ions(:)) /= nPhotoRea) then
+       print*, 'Problem, nPhotoRea is not the sum of n_ions'
+       stop
+    end if
 
     do i=1,n_elements
        indices(i,:) = get_indices(i)
@@ -125,6 +135,27 @@ contains
   !*************************************************************************
 
   !*************************************************************************
+  subroutine nphotorea_to_ion(i_photo_rea, element, ion)
+
+    implicit none
+
+    integer(kind=4),intent(in)    :: i_photo_rea
+    integer(kind=4),intent(out)   :: element, ion
+    integer(kind=4)               :: i,j,k
+
+    k=0
+    do i=1,n_elements
+       if(i_photo_rea < n_ions(i) + k + 1) then
+          element = elements(i)
+          ion = i_photo_rea - k
+          exit
+       end if
+       k = k+n_ions(i)
+    end do
+
+  end subroutine nphotorea_to_ion
+
+  !*************************************************************************
   function get_non_zero_index(int,T,ion_state)
 
     implicit none
@@ -162,6 +193,19 @@ contains
           get_ion_state = 5
        end if
 
+    case(7)
+       if(T<1.6d4) then
+          get_ion_state = 1
+       else if(T<5.2d4) then
+          get_ion_state = 2
+       else if(T<1.07d5) then
+          get_ion_state = 3
+       else if(T<1.99d5) then
+          get_ion_state = 4
+       else
+          get_ion_state = 5
+       end if
+
     case(8)
        if(T<1.6d4) then
           get_ion_state = 1
@@ -170,6 +214,19 @@ contains
        else if(T<1.13d5) then
           get_ion_state = 3
        else if(T<2.1d5) then
+          get_ion_state = 4
+       else
+          get_ion_state = 5
+       end if
+
+    case(10)
+       if(T<2.1d4) then
+          get_ion_state = 1
+       else if(T<6.4d4) then
+          get_ion_state = 2
+       else if(T<1.22d5) then
+          get_ion_state = 3
+       else if(T<2.02d5) then
           get_ion_state = 4
        else
           get_ion_state = 5
@@ -206,8 +263,30 @@ contains
           get_ion_state = 5
        end if
 
+    case(16)
+       if(T<2.5d4) then
+          get_ion_state = 2
+       else if(T<4.2d4) then
+          get_ion_state = 3
+       else if(T<6.3d4) then
+          get_ion_state = 4
+       else
+          get_ion_state = 5
+       end if
+
+    case(26)
+       if(T<1.8d4) then
+          get_ion_state = 2
+       else if(T<4.1d4) then
+          get_ion_state = 3
+       else if(T<7.6d4) then
+          get_ion_state = 4
+       else
+          get_ion_state = 5
+       end if
+
     case default
-       print*, 'Other elements than Carbon(6), Oxygen(8), Magnesium(12), Aluminium(13) and Silicone(14) have not been implemented yet'
+       print*, 'Other elements than Carbon(6), Nitrogen(7), Oxygen(8), Neon(10), Magnesium(12), Aluminium(13), Silicone(14), Sulfur(16) and Iron(26) have not been implemented yet'
        call stop_mpi
 
     end select
@@ -264,6 +343,10 @@ contains
              write(krome_parameter_file,'(a)') trim(value)
           case ('verbose')
              read(value,*) verbose
+          case ('just_T_ne')
+             read(value,*) just_T_ne
+          case ('ion_T_ne')
+             read(value,*) ion_T_ne
           end select
        end do
     end if
