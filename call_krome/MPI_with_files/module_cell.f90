@@ -96,7 +96,7 @@ contains
     real(kind=8),allocatable,dimension(:,:)       :: cells_rt
     real(kind=8),dimension(ncell)                 :: nH, Tgas, mets, nHI
     real(kind=8),dimension(3,ncell)               :: fractions
-    integer(kind=4)                               :: nSEDgroups, i, j, k, seed, element_rea, ion_rea
+    integer(kind=4)                               :: nSEDgroups, i, j, k, seed, element_rea, ion_rea, element_rea_2, ion_rea_2
     real(kind=8)   :: ran
 
     nSEDgroups = get_nOptBins()
