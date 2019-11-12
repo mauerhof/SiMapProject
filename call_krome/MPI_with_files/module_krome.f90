@@ -24,6 +24,7 @@ module module_krome
   character(2),parameter,dimension(26),public :: element_names = (/ 'H ', 'He', 'Li', 'Be', 'B ', 'C ', 'N ', 'O ', 'F ', 'Ne', 'Na', 'Mg', 'Al', 'Si', 'P ', 'S ', 'Cl', 'Ar', 'K ', 'Ca', 'Sc', 'Ti', 'V ', 'Cr', 'Mn', 'Fe' /)
   character(3),parameter,dimension(6),public  :: roman_num     = (/ 'I  ', 'II ', 'III', 'IV ', 'V  ', 'VI ' /)
   real(kind=8),parameter,dimension(26),public :: photo_background_107 = (/ -1d1, -1d1, -1d1, -1d1, -1d1, 1.138d-10, -1d1, -1d1, -1d1, -1d1, -1d1, 6.502d-11, 3.333d-9, 3.156d-9, -1d1, 5.286d-10, -1d1, -1d1, -1d1, -1d1, -1d1, -1d1, -1d1, -1d1, -1d1, 2.026d-10 /)
+  real(kind=8),parameter,dimension(26),public :: photo_background_uvb_161 = (/ -1d1, -1d1, -1d1, -1d1, -1d1, 5.541d-11, -1d1, -1d1, -1d1, -1d1, -1d1, 3.4536d-11, 1.8207d-9, 1.648d-9, -1d1, 2.6333d-10, -1d1, -1d1, -1d1, -1d1, -1d1, -1d1, -1d1, -1d1, -1d1, 1.0547d-10 /)
 
   public :: read_krome_params, get_non_zero_index, nphotorea_to_ion
 
@@ -49,7 +50,7 @@ contains
        call stop_mpi
     end if
 
-    allocate(elements(n_elements), n_ions(n_elements), abundances(n_elements), indices(n_elements,5))
+    allocate(elements(n_elements), n_ions(n_elements), abundances(n_elements), indices(n_elements,7))
 
     call read_krome_params_file
 
@@ -59,8 +60,8 @@ contains
           print*, 'Please put at least 1 for n_ions, stopping the program.'
           call stop_mpi
        end if
-       if(n_ions(i) > 4) then
-          print*, 'Please put no more than 4 for n_ions, stopping the program.'
+       if(n_ions(i) > 6) then
+          print*, 'Please put no more than 6 for n_ions, stopping the program.'
           call stop_mpi
        end if
        if(i<n_elements) then
@@ -120,7 +121,7 @@ contains
     implicit none
 
     integer(kind=4), intent(in) :: element
-    integer(kind=4)             :: get_indices(5), i, j
+    integer(kind=4)             :: get_indices(7), i, j
 
     get_indices = 0
     get_indices(1) = 3 + element

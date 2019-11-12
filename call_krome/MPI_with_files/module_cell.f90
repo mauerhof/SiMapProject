@@ -123,19 +123,24 @@ contains
        if(.not. restart) then
           do j=1,nPhotoRea
              call nphotorea_to_ion(j, element_rea, ion_rea)
-             if(photo_background_107(element_rea) > 0d0 .and. ion_rea == 1) cellgrid(i)%rates(j) = photo_background_107(element_rea)
+             if(photo_background_uvb_161(element_rea) > 0d0 .and. ion_rea == 1) then
+                cellgrid(i)%rates(j) = photo_background_uvb_161(element_rea)
+                call nphotorea_to_ion(j+1, element_rea_2, ion_rea_2)
+                if(element_rea_2 == element_rea) cellgrid(i)%rates(j) = max(cellgrid(i)%rates(j), 2d0*cellgrid(i)%rates(j+1))
+             end if
+
           end do
        end if
 
        !if(i==1) print*,cellgrid(i)%rates(:)
-       
+
        !if((.not. restart) .and. (elements(1)/=8)) cellgrid(i)%rates(1) = 1.65d-9
-       
+
        !HACKKKK, HARD CODE
        !Put UVB instead of stellar radiation
        ! cellgrid(i)%rates(1) = 1.578d-9
        ! cellgrid(i)%rates(2) = 1.212d-13
-       
+
        cellgrid(i)%den_ions(:) = 0d0
     end do
 
@@ -179,12 +184,12 @@ contains
           end do
           densities(krome_idx_E) = max(densities(krome_idx_E),1d-18)
 
-          call krome_equilibrium(densities, cellgrid(i)%T, icpu)
+          call krome_equilibrium(densities, cellgrid(i)%T)!, icpu)
 
           l=0
           do j=1,n_elements
              !Rare cases of bugs :
-             if(maxval(densities(indices(j,1:n_ions(j)))) > 1.01*n_ion_save(j)) then
+             if(abs( sum(densities(indices(j,1:n_ions(j)+1))) - n_ion_save(j)) / n_ion_save(j) > 0.01) then
                 print*, 'bug in file ', icpu
                 print*, 'temperature, nHI, nHII, photorates, metallicity'
                 print*, cellgrid(i)%T, cellgrid(i)%nHI, cellgrid(i)%nHII, cellgrid(i)%rates(:), cellgrid(i)%Z
