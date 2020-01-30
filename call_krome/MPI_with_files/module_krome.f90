@@ -23,8 +23,9 @@ module module_krome
   integer(kind=4),parameter,public            :: nIons = nmols - 6 - (natoms-3)
   character(2),parameter,dimension(26),public :: element_names = (/ 'H ', 'He', 'Li', 'Be', 'B ', 'C ', 'N ', 'O ', 'F ', 'Ne', 'Na', 'Mg', 'Al', 'Si', 'P ', 'S ', 'Cl', 'Ar', 'K ', 'Ca', 'Sc', 'Ti', 'V ', 'Cr', 'Mn', 'Fe' /)
   character(3),parameter,dimension(6),public  :: roman_num     = (/ 'I  ', 'II ', 'III', 'IV ', 'V  ', 'VI ' /)
-  real(kind=8),parameter,dimension(26),public :: photo_background_107 = (/ -1d1, -1d1, -1d1, -1d1, -1d1, 1.138d-10, -1d1, -1d1, -1d1, -1d1, -1d1, 6.502d-11, 3.333d-9, 3.156d-9, -1d1, 5.286d-10, -1d1, -1d1, -1d1, -1d1, -1d1, -1d1, -1d1, -1d1, -1d1, 2.026d-10 /)
-  real(kind=8),parameter,dimension(26),public :: photo_background_uvb_161 = (/ -1d1, -1d1, -1d1, -1d1, -1d1, 5.541d-11, -1d1, -1d1, -1d1, -1d1, -1d1, 3.4536d-11, 1.8207d-9, 1.648d-9, -1d1, 2.6333d-10, -1d1, -1d1, -1d1, -1d1, -1d1, -1d1, -1d1, -1d1, -1d1, 1.0547d-10 /)
+  !real(kind=8),parameter,dimension(26),public :: photo_background_107 = (/ -1d1, -1d1, -1d1, -1d1, -1d1, 1.138d-10, -1d1, -1d1, -1d1, -1d1, -1d1, 6.502d-11, 3.333d-9, 3.156d-9, -1d1, 5.286d-10, -1d1, -1d1, -1d1, -1d1, -1d1, -1d1, -1d1, -1d1, -1d1, 2.026d-10 /)
+  !real(kind=8),parameter,dimension(26),public :: photo_background_uvb_161 = (/ -1d1, -1d1, -1d1, -1d1, -1d1, 5.541d-11, -1d1, -1d1, -1d1, -1d1, -1d1, 3.4536d-11, 1.8207d-9, 1.648d-9, -1d1, 2.6333d-10, -1d1, -1d1, -1d1, -1d1, -1d1, -1d1, -1d1, -1d1, -1d1, 1.0547d-10 /)
+  real(kind=8),parameter,public               :: UVB_bin0_z3 = 7.8d8   ! Value of the UVB at redshift 3-3.2 if we integrate like Ramses, between 6 eV and 13.6 eV. Non-ionizing bin
 
   public :: read_krome_params, get_non_zero_index, nphotorea_to_ion
 
@@ -76,7 +77,7 @@ contains
        end if
        if(abundances(i) < 0d0) then
           if(elements(i) > 26) then
-             if(rank==0) print*, 'I did not implement the solar abundances for elements heavier than Iron (26), please but an abundance in the parameter file'
+             if(rank==0) print*, 'I did not implement the solar abundances for elements heavier than Iron (26), please put an abundance in the parameter file'
              call stop_mpi
           else
              abundances(i) = solar_abundances(elements(i))

@@ -20,6 +20,7 @@ module module_cell
      real(kind=8)                                :: Z
      real(kind=8),dimension(nPhotoRea)           :: rates      !nPhotoRea is the number of photoionization reactions in the chemical network of Krome
      real(kind=8),dimension(nmols-natoms-3)      :: den_ions   !Density of the ionization stages of interest
+     real(kind=8)                                :: ne
   end type cell
 
   real(kind=8),allocatable,dimension(:,:),public :: csn
@@ -120,17 +121,17 @@ contains
           cellgrid(i)%rates(j) = sum(cells_rt(:,i)*csn(:,j))
        end do
 
-       if(.not. restart) then
-          do j=1,nPhotoRea
-             call nphotorea_to_ion(j, element_rea, ion_rea)
-             if(photo_background_uvb_161(element_rea) > 0d0 .and. ion_rea == 1) then
-                cellgrid(i)%rates(j) = photo_background_uvb_161(element_rea)
-                call nphotorea_to_ion(j+1, element_rea_2, ion_rea_2)
-                if(element_rea_2 == element_rea) cellgrid(i)%rates(j) = max(cellgrid(i)%rates(j), 2d0*cellgrid(i)%rates(j+1))
-             end if
+       ! if(.not. restart) then
+       !    do j=1,nPhotoRea
+       !       call nphotorea_to_ion(j, element_rea, ion_rea)
+       !       if(photo_background_uvb_161(element_rea) > 0d0 .and. ion_rea == 1) then
+       !          cellgrid(i)%rates(j) = photo_background_uvb_161(element_rea)
+       !          call nphotorea_to_ion(j+1, element_rea_2, ion_rea_2)
+       !          if(element_rea_2 == element_rea) cellgrid(i)%rates(j) = max(cellgrid(i)%rates(j), 2d0*cellgrid(i)%rates(j+1))
+       !       end if
 
-          end do
-       end if
+       !    end do
+       ! end if
 
        !if(i==1) print*,cellgrid(i)%rates(:)
 
@@ -156,12 +157,13 @@ contains
     integer(kind=4),intent(in)         :: icpu
     integer(kind=4)                    :: i, j, k, l, ion_state(n_elements), ncell, non_zero_index(n_elements)
     real(kind=8)                       :: densities(nmols), n_ion_save(n_elements)
+    logical                            :: krome_converged
 
     ncell = size(cellgrid)
 
     do i=1,ncell
 
-       if(cellgrid(i)%T > 1d6) then
+       if(cellgrid(i)%T > 1d10) then
           cellgrid(i)%den_ions(:) = 1d-18
        else
 
@@ -184,7 +186,15 @@ contains
           end do
           densities(krome_idx_E) = max(densities(krome_idx_E),1d-18)
 
-          call krome_equilibrium(densities, cellgrid(i)%T)!, icpu)
+          call krome_equilibrium(densities, cellgrid(i)%T, icpu, i, krome_converged)
+          if(.not. krome_converged) then
+             print*, 'cell not converged '
+             print*, 'temperature, nHI, nHII : ', cellgrid(i)%T, cellgrid(i)%nHI, cellgrid(i)%nHII!, photorates, metallicity'
+             !             print*, cellgrid(i)%T, cellgrid(i)%nHI, cellgrid(i)%nHII, cellgrid(i)%rates(:), cellgrid(i)%Z
+             print*, ''
+          end if
+
+          cellgrid(i)%ne = max(densities(krome_idx_E), 1d-18)
 
           l=0
           do j=1,n_elements
@@ -267,7 +277,7 @@ contains
     open(unit=10, file=nomfich, form='unformatted', action='write')
     write(10) ncell
     write(10) (cellgrid(i)%T, i=1,ncell)
-    write(10) (cellgrid(i)%Z / 0.0134 * 1.4 * 2.7d-4 * (cellgrid(i)%nHI + cellgrid(i)%nHII) + cellgrid(i)%nHII + cellgrid(i)%nHeII + 2d0*cellgrid(i)%nHeIII, i=1,ncell)
+    write(10) (cellgrid(i)%ne, i=1,ncell)
     close(10)
 
     deallocate(cellgrid)
